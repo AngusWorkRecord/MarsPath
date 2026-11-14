@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a111c" />
+  <title>MarsPath AI | Mission Control</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-icon">◈</span><div><strong>MARS<span>PATH</span></strong><small>EXPLORATION INTELLIGENCE</small></div></div>
+      <div class="side-section"><span class="eyebrow">MISSION OVERVIEW</span>
+        <div class="mission-id">ARES / EVA-001 <span class="tag">DEMO</span></div>
+        <p class="muted">Jezero Crater · Mars</p>
+      </div>
+      <div class="side-section"><span class="eyebrow">MAP LAYERS</span>
+        <label class="toggle"><span><b class="dot sand"></b> Orbital terrain</span><input type="checkbox" id="terrain" checked><i></i></label>
+        <label class="toggle"><span><b class="dot red"></b> Hazard zones <em>SIM</em></span><input type="checkbox" id="hazards" checked><i></i></label>
+        <label class="toggle"><span><b class="dot teal"></b> Science targets <em>SIM</em></span><input type="checkbox" id="science" checked><i></i></label>
+        <label class="toggle"><span><b class="dot blue"></b> Traverse route <em>SIM</em></span><input type="checkbox" id="route" checked><i></i></label>
+      </div>
+      <div class="side-section"><span class="eyebrow">ROUTE STRATEGY</span><div class="route-selector">
+        <button class="route-choice active" data-route="balanced"><span><strong>Balanced exploration</strong><small>Illustrative science + safety</small></span><span>↗</span></button>
+        <button class="route-choice" data-route="shortest"><span><strong>Shortest path</strong><small>Illustrative direct traverse</small></span><span>↗</span></button>
+        <button class="route-choice" data-route="science"><span><strong>Science priority</strong><small>Illustrative extra stops</small></span><span>↗</span></button>
+      </div></div>
+      <div class="sidebar-bottom"><div class="source-dot"></div><span>BASE MAP: ESA / DLR / FU BERLIN / HRSC<br><small>Via NASA JPL • external image loading</small></span></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><div class="breadcrumb">MISSIONS <span>/</span> MARSWALK PLANNER <span>/</span> JEZERO</div><div class="topright"><span class="status"><span></span> CONCEPT PROTOTYPE</span><span class="date">SPACE APPS 2026</span></div></header>
+      <section class="main-content">
+        <div class="hero-heading"><div><div class="eyebrow accent">INTERPLANETARY SURVIVAL GUIDE</div><h1>Explore further.<br><em>Return safer.</em></h1><p>Visual mission planning for the next generation of Mars explorers.</p></div><div class="coordinates">REGION <strong>JEZERO CRATER</strong><small>18.4° N · 77.6° E (approx. region)</small></div></div>
+        <div class="metric-grid">
+          <div class="metric"><div class="metric-label">PLANNED DISTANCE <span>↗</span></div><div class="metric-value" id="distance">4.1 <small>km</small></div><div class="metric-foot">DEMO ESTIMATE</div></div>
+          <div class="metric"><div class="metric-label">EVA DURATION <span>◷</span></div><div class="metric-value" id="duration">2h 35m</div><div class="metric-foot">DEMO ESTIMATE</div></div>
+          <div class="metric"><div class="metric-label">RISK INDEX <span>◈</span></div><div class="metric-value" id="risk">25 <small>/ 100</small></div><div class="metric-foot">SIMULATED • LOWER IS BETTER</div></div>
+          <div class="metric"><div class="metric-label">SCIENCE TARGETS <span>⌾</span></div><div class="metric-value" id="stops">2 <small>stops</small></div><div class="metric-foot">ILLUSTRATIVE POINTS</div></div>
+        </div>
+        <div class="content-grid"><section class="map-card"><div class="card-header"><div><div class="card-title">Jezero surface overview</div><div class="subtle">HRSC-derived regional map with conceptual route overlays</div></div><span class="small-tag">MAP VIEW / NOT NAVIGATION GRADE</span></div>
+          <div class="map-wrap" id="mapWrap"><div class="map-image"></div><div class="map-shade"></div>
+            <svg id="mapSvg" viewBox="0 0 1000 773" preserveAspectRatio="none" role="img" aria-label="Jezero Crater map with illustrative paths and science markers">
+              <g id="hazardLayer"><ellipse cx="340" cy="495" rx="125" ry="60" class="hazard" transform="rotate(-26 340 495)"/><ellipse cx="698" cy="565" rx="95" ry="48" class="hazard" transform="rotate(20 698 565)"/></g>
+              <g id="routeLayer"><polyline id="routeGlow" class="route-glow" points=""/><polyline id="routeLine" class="route-line" points=""/></g>
+              <g id="scienceLayer"><g class="marker" data-name="Sedimentary outcrop" data-description="Illustrative science location; not a validated sample site." transform="translate(355 350)"><circle r="24" class="marker-halo"/><circle r="11" class="marker-core"/><text y="-27">S1</text></g><g class="marker" data-name="Crater floor study" data-description="Illustrative science location; not a validated sample site." transform="translate(610 412)"><circle r="24" class="marker-halo"/><circle r="11" class="marker-core"/><text y="-27">S2</text></g><g class="marker" data-name="Rock layer observation" data-description="Additional simulated science stop on Science Priority route." transform="translate(510 565)"><circle r="24" class="marker-halo"/><circle r="11" class="marker-core"/><text y="-27">S3</text></g></g>
+              <g class="home-marker" transform="translate(250 580)"><circle r="22"/><text y="5">⌂</text></g>
+            </svg>
+            <div class="map-toplabel">● ORBITAL DATA / HRSC <span>+ SIMULATED MISSION LAYERS</span></div>
+            <div class="map-legend"><div><b class="legend-line"></b> PROPOSED ROUTE</div><div><b class="legend-red"></b> DEMO HAZARD</div><div><b class="legend-teal"></b> DEMO TARGET</div></div>
+            <div class="map-alert" id="mapAlert">Concept overlay: shapes and coordinates are not georeferenced or safety validated.</div>
+            <div class="map-tooltip" id="mapTooltip" hidden></div>
+          </div>
+          <div class="map-footer"><span>Map credit: ESA/DLR/FU Berlin/HRSC, via NASA JPL (2025)</span><a href="https://www.jpl.nasa.gov/images/map-of-mars-jezero-crater/" target="_blank" rel="noreferrer">View NASA image source ↗</a></div>
+        </section>
+        <aside class="right-stack"><div class="panel"><div class="eyebrow">ROUTE ANALYSIS</div><h2 id="routeName">Balanced exploration</h2><p class="muted">Compare possible exploration priorities. Values are placeholders for the visual prototype.</p><div class="progress-title"><span>Scientific opportunity</span><strong id="scienceScore">75%</strong></div><div class="progress"><div id="scienceBar" style="width:75%"></div></div><div class="progress-title"><span>Risk exposure</span><strong id="riskScore">25%</strong></div><div class="progress orange"><div id="riskBar" style="width:25%"></div></div><div class="panel-notice">⚠ &nbsp; No real EVA safety calculations are performed.</div></div>
+        <div class="panel"><div class="eyebrow">MISSION WAYPOINTS</div><div class="waypoint"><span class="wp-number">01</span><div><strong>Departure / habitat</strong><small>Simulated staging point</small></div></div><div class="waypoint"><span class="wp-number">02</span><div><strong>Surface science target</strong><small>Geology observation concept</small></div></div><div class="waypoint"><span class="wp-number">03</span><div><strong>Return assessment</strong><small>Illustrative decision checkpoint</small></div></div></div>
+        <div class="panel source"><div class="eyebrow">DATA INTEGRITY</div><h2>Real imagery.<br>Honest simulation.</h2><p>This prototype connects a published Jezero map to interface concepts. Route metrics, hazards, and waypoints are <strong>not</strong> NASA measurements.</p></div></aside></div>
+        <footer>MARSPATH AI / NASA SPACE APPS 2026 <span>INDEPENDENT HACKATHON CONCEPT · NOT ENDORSED BY NASA</span></footer>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
