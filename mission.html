@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0a111c" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23ed9f72' d='M16 2 30 16 16 30 2 16z'/%3E%3C/svg%3E" />
     <title>MarsPath AI | Marswalk Mission</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="mission.css" />
@@ -59,10 +60,14 @@
             <span><b class="dot blue"></b> Environmental records</span>
             <input type="checkbox" id="notes" checked /><i></i>
           </label>
+          <p class="muted layer-help">Routes and S1–S3 sites are simulated; the explorer shows your simulated position.</p>
+          <details class="sidebar-help">
+            <summary>说明 · Layer guide</summary>
           <p class="muted layer-help">
             Preset: line + origin. Custom: line + C waypoints and tasks. S1–S3 are
             separate simulated sites. The explorer always shows your simulated position.
           </p>
+          </details>
         </div>
         <div class="side-section">
           <span class="eyebrow">P1 VISIBILITY</span
@@ -71,11 +76,15 @@
             <option value="all">All markers</option>
             <option value="near">Nearby markers · Simulated range</option>
           </select>
+          <p class="muted">P1 is approximate; location uncertainty is unquantified. Nearby is simulated only.</p>
+          <details class="sidebar-help">
+            <summary>说明 · P1 precision</summary>
           <p class="muted">
             P1 is an approximate camera-site estimate near X 300, Y 359. Its dashed circle
             expresses unquantified location uncertainty, not a measured error bound.
             Nearby is a simulated range only.
           </p>
+          </details>
           <p id="nearbySummary" class="muted" role="status"></p>
         </div>
         <div class="side-section">
@@ -189,16 +198,6 @@
                 <span>Drag to pan · Scroll to zoom at the pointer.</span>
               </div>
               <div class="map-wrap" id="mapWrap">
-                <details class="note-map-toolbar" id="markerTools">
-                  <summary>Add Marker</summary>
-                  <div class="marker-tools-body">
-                    <button id="pickNotePosition" aria-pressed="false">
-                      Add note marker
-                    </button>
-                    <button id="cancelNotePosition" disabled>Cancel adding</button>
-                    <span id="mapNoteMode" role="status">Browse map</span>
-                  </div>
-                </details>
                 <div id="mapScene" class="map-scene">
                   <img
                     class="map-image"
@@ -231,10 +230,8 @@
                         />
                         <path class="region-leader" d="M225 302 L254 330" />
                         <g id="deltaFrontLabel" transform="translate(225 286)">
+                          <rect x="-8" y="-22" width="266" height="30" rx="5" class="map-label-backplate" />
                           <text>Delta-front observation area</text>
-                          <text y="17" class="region-precision-label">
-                            Approximate observation area
-                          </text>
                         </g>
                       </g>
                     </g>
@@ -290,7 +287,9 @@
                       >
                         <circle r="24" class="marker-halo" />
                         <circle r="11" class="marker-core" />
-                        <text y="-27">S1</text>
+                        <path class="site-label-leader" d="M14 8 L31 30" />
+                        <rect x="18" y="26" width="92" height="30" rx="5" class="map-label-backplate" />
+                        <text x="64" y="48">S1</text>
                       </g>
                       <g
                         class="marker"
@@ -300,7 +299,9 @@
                       >
                         <circle r="24" class="marker-halo" />
                         <circle r="11" class="marker-core" />
-                        <text y="-27">S2</text>
+                        <path class="site-label-leader" d="M14 8 L31 30" />
+                        <rect x="18" y="26" width="92" height="30" rx="5" class="map-label-backplate" />
+                        <text x="64" y="48">S2</text>
                       </g>
                       <g
                         class="marker"
@@ -310,7 +311,9 @@
                       >
                         <circle r="24" class="marker-halo" />
                         <circle r="11" class="marker-core" />
-                        <text y="-27">S3</text>
+                        <path class="site-label-leader" d="M14 8 L31 30" />
+                        <rect x="18" y="26" width="92" height="30" rx="5" class="map-label-backplate" />
+                        <text x="64" y="48">S3</text>
                       </g>
                     </g>
                     <g id="imageryLayer">
@@ -336,9 +339,6 @@
                       >
                         <circle r="26" fill="#9d5e32" stroke="#ffcf91" stroke-width="3" />
                         <text y="7" style="font-size: 20px">P1</text>
-                        <text y="-34" style="font-size: 17px">
-                          Approximate camera location
-                        </text>
                       </g>
                     </g>
                     <g
@@ -366,11 +366,23 @@
                   <div id="hazardLegend"><b class="legend-red"></b> SIM HAZARD</div>
                   <div id="scienceLegend"><b class="legend-teal"></b> SIM SITE</div>
                 </div>
+                <div class="map-tooltip" id="mapTooltip" hidden></div>
+              </div>
+              <div class="map-support">
                 <div class="map-alert" id="mapAlert">
                   Concept overlay: shapes and coordinates are not georeferenced or safety
                   validated.
                 </div>
-                <div class="map-tooltip" id="mapTooltip" hidden></div>
+                <details class="note-map-toolbar" id="markerTools">
+                  <summary>Add Marker</summary>
+                  <div class="marker-tools-body">
+                    <button id="pickNotePosition" aria-pressed="false">
+                      Add note marker
+                    </button>
+                    <button id="cancelNotePosition" disabled>Cancel adding</button>
+                    <span id="mapNoteMode" role="status">Browse map</span>
+                  </div>
+                </details>
               </div>
               <div class="map-footer">
                 <span>Map credit: ESA/DLR/FU Berlin/HRSC, via NASA JPL (2025)</span
@@ -679,6 +691,7 @@
         <aside>
           <section id="landingContext">
             <h3>Official landing-site inset | PIA24483</h3>
+            <p>Approximate camera location · P1. Position and camera pose are not verified.</p>
             <a href="assets/landing-site.jpg" target="_blank" rel="noreferrer"
               ><img
                 class="orbital"

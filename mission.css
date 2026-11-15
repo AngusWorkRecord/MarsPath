@@ -718,3 +718,70 @@ dialog .muted {
   font-size: 12px;
   line-height: 1.7;
 }
+
+/* Keep disclosure controls and the full disclaimer in normal flow. */
+.map-support {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-top: 1px solid #324657;
+}
+.map-support .map-alert {
+  display: block;
+  position: static;
+  flex: 1 1 240px;
+  max-width: none;
+}
+.map-support .note-map-toolbar {
+  position: static;
+  flex: 0 1 290px;
+  max-width: 100%;
+}
+.note-map-toolbar > summary {
+  min-height: 44px;
+  padding: 14px 10px;
+}
+.marker-tools-body button { min-height: 44px; }
+
+/* Label plates separate overlay text from the printed HRSC basemap labels. */
+.map-label-backplate { fill: #102732; fill-opacity: .96; stroke: #547681; stroke-width: 1; }
+.site-label-leader { fill: none; stroke: #8cf4e2; stroke-width: 2; }
+#scienceLayer .marker text { font-size: 19px; }
+#deltaFrontLabel text { font-size: 18px; }
+
+/* Compact mission header, leaving the map and current tasks above the fold. */
+.topbar { height: 48px; padding-inline: 24px; }
+.main-content { padding: 16px 24px; }
+.hero-heading { margin-bottom: 12px; gap: 16px; }
+.hero-heading h1 { font-size: clamp(28px, 2.4vw, 36px); margin: 7px 0; line-height: 1.08; }
+.hero-heading h1 br { display: none; }
+.hero-heading h1 em::before { content: " "; }
+.hero-heading p { margin: 6px 0 0; }
+.metric-grid { gap: 8px; margin-bottom: 10px; }
+.metric { padding: 8px 12px; }
+.metric-value { font-size: 22px; margin: 5px 0 3px; }
+.metric-foot { letter-spacing: .4px; line-height: 1.4; }
+.mission-status { padding: 8px 12px; margin-bottom: 10px; }
+.card-header { padding: 10px 12px; flex-wrap: wrap; }
+.map-toolbar { padding: 8px 12px; }
+.map-toolbar button { min-height: 40px; min-width: 40px; }
+.panel { padding: 14px; }
+.sidebar-section:not([open]) { padding-bottom: 14px; }
+.task-overview details { margin-top: 6px; }
+.sidebar-section > .panel-body { padding-top: 6px; }
+@media (min-width: 1000px) and (max-width: 1150px) {
+  .sidebar { width: 220px; padding-inline: 14px; }
+  .main-content { padding-inline: 16px; }
+  .content-grid { grid-template-columns: minmax(0, 1fr) 250px; gap: 12px; }
+  .right-stack { display: flex; }
+  .coordinates { max-width: 170px; }
+}
+@media (max-width: 800px) {
+  .main-content { padding: 14px; }
+  .hero-heading h1 { font-size: 28px; }
+}
+
+.sidebar-help > summary { cursor: pointer; min-height: 44px; padding: 12px 0; color: #b9d0dc; font-size: 12px; }
+.sidebar-help p { padding-bottom: 8px; }

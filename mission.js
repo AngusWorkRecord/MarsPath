@@ -79,6 +79,9 @@ function openSidebarSection(selected) {
   sidebarSections.forEach((section) => {
     section.open = section === selected;
   });
+  try {
+    localStorage.setItem(KEY + '-sidebar', String(sidebarSections.indexOf(selected)));
+  } catch { /* Panel preferences must not interrupt mission controls. */ }
 }
 sidebarSections.forEach((section) => {
   section.querySelector(':scope > summary').addEventListener('click', (event) => {
@@ -86,6 +89,15 @@ sidebarSections.forEach((section) => {
     openSidebarSection(section.open ? null : section);
   });
 });
+// A missing preference keeps the HTML's first-use Task Overview open.
+try {
+  const savedPanel = localStorage.getItem(KEY + '-sidebar');
+  if (savedPanel !== null && /^-?\d+$/.test(savedPanel)) {
+    const index = Number(savedPanel);
+    if (index >= -1 && index < sidebarSections.length)
+      openSidebarSection(sidebarSections[index] || null);
+  }
+} catch { /* Leave the accessible default open when storage is unavailable. */ }
 const initial = () => ({
   version: 2,
   route: 'balanced',
@@ -834,7 +846,7 @@ function updateMarkerSizes() {
   const [regionLabelX, regionLabelY] = OBSERVATION_DATA.regions.deltaFront.labelAnchor;
   $('deltaFrontLabel').setAttribute(
     'transform',
-    `translate(${regionLabelX} ${regionLabelY}) scale(${Math.pow(zoom, -1.3)})`,
+    `translate(${regionLabelX} ${regionLabelY}) scale(${Math.max(Math.pow(zoom, -1.3), 12 / (18 * screenScale))})`,
   );
   document
     .querySelectorAll('#mapSvg .marker, #mapSvg .home-marker, #walker')
@@ -846,8 +858,9 @@ function updateMarkerSizes() {
         glyph.append(...marker.childNodes);
         marker.append(glyph);
       }
-      // Keep the geographic anchor unchanged; at 4× zoom the visible glyph is ~66% of its original screen size.
-      glyph.setAttribute('transform', `scale(${Math.pow(zoom, -1.3)})`);
+      // Keep anchors unchanged and short labels at least 12px at every zoom.
+      const glyphScale = Math.max(Math.pow(zoom, -1.3), 12 / (19 * screenScale));
+      glyph.setAttribute('transform', `scale(${glyphScale})`);
       if (marker.classList.contains('marker') && marker.style.pointerEvents !== 'none') {
         let hit = marker.querySelector(':scope > .marker-hit');
         if (!hit) {
