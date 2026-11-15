@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0a111c" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23ed9f72' d='M16 2 30 16 16 30 2 16z'/%3E%3C/svg%3E" />
-    <title>MarsPath AI | Marswalk Mission</title>
+    <title>MarsPath · Marswalk Simulator</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="mission.css" />
   </head>
@@ -20,7 +20,7 @@
           </div>
         </div>
         <div class="side-section">
-          <span class="eyebrow">MISSION OVERVIEW</span>
+          <span class="eyebrow">JOURNEY OVERVIEW</span>
           <div class="mission-id">ARES / EVA-001 <span class="tag">DEMO</span></div>
           <p class="muted">Jezero Crater · Mars</p>
         </div>
@@ -31,11 +31,11 @@
             ><input type="checkbox" id="terrain" checked /><i></i
           ></label>
           <label class="toggle"
-            ><span><b class="dot sand"></b> Landing-site imagery · P1</span
+            ><span><b class="dot sand"></b> P1 · Landing-site Imagery</span
             ><input id="imagery" type="checkbox" checked /><i></i
           ></label>
           <label class="toggle"
-            ><span><b class="dot teal"></b> Delta-front observation area</span
+            ><span><b class="dot teal"></b> Delta-front Observation Area</span
             ><input id="deltaFront" type="checkbox" checked /><i></i
           ></label>
           <label class="toggle"
@@ -43,7 +43,7 @@
             ><input type="checkbox" id="hazards" checked /><i></i
           ></label>
           <label class="toggle"
-            ><span><b class="dot teal"></b> Simulated sites S1–S3 <em>SIM</em></span
+            ><span><b class="dot teal"></b> Simulated Science Sites · S1–S3 <em>SIM</em></span
             ><input type="checkbox" id="science" checked /><i></i
           ></label>
           <label class="toggle"
@@ -52,65 +52,65 @@
           ></label>
           <label class="toggle">
             <span
-              ><b class="dot teal"></b> Custom route &amp; waypoints <em>SIM</em></span
+              ><b class="dot teal"></b> Custom Route &amp; Waypoints <em>SIM</em></span
             >
             <input type="checkbox" id="customMap" /><i></i>
           </label>
           <label class="toggle">
-            <span><b class="dot blue"></b> Environmental records</span>
+            <span><b class="dot blue"></b> Environment Notes</span>
             <input type="checkbox" id="notes" checked /><i></i>
           </label>
-          <p class="muted layer-help">Routes and S1–S3 sites are simulated; the explorer shows your simulated position.</p>
+          <p class="muted layer-help">Routes and S1–S3 sites are simulated; the explorer shows your simulated position. STP1 is the shared simulated task destination for all three preset routes.</p>
           <details class="sidebar-help">
-            <summary>说明 · Layer guide</summary>
+            <summary>Details · Layer guide</summary>
           <p class="muted layer-help">
             Preset: line + origin. Custom: line + C waypoints and tasks. S1–S3 are
-            separate simulated sites. The explorer always shows your simulated position.
+            independent simulated science sites. The explorer always shows your simulated position.
           </p>
           </details>
         </div>
         <div class="side-section">
-          <span class="eyebrow">P1 VISIBILITY</span
-          ><label for="markerMode">P1 marker range</label
+          <span class="eyebrow">P1 Visibility</span
+          ><label for="markerMode">P1 Visibility</label
           ><select id="markerMode">
-            <option value="all">All markers</option>
-            <option value="near">Nearby markers · Simulated range</option>
+            <option value="all">Always Show</option>
+            <option value="near">Show When Nearby · SIM</option>
           </select>
-          <p class="muted">P1 is approximate; location uncertainty is unquantified. Nearby is simulated only.</p>
+          <p class="muted">Official sources identify P1 as the landing site. Its marker on this regional map is an approximate estimate; exact camera pose and map registration remain unverified. Nearby range is simulated only.</p>
           <details class="sidebar-help">
-            <summary>说明 · P1 precision</summary>
+            <summary>Details · P1 precision</summary>
           <p class="muted">
             P1 is an approximate camera-site estimate near X 300, Y 359. Its dashed circle
             expresses unquantified location uncertainty, not a measured error bound.
-            Nearby is a simulated range only.
+            Show When Nearby · SIM uses a simulated range only, not a verified distance.
           </p>
           </details>
           <p id="nearbySummary" class="muted" role="status"></p>
         </div>
         <div class="side-section">
-          <span class="eyebrow">ROUTE STRATEGY</span>
+          <span class="eyebrow">Route Selection</span>
           <div class="route-selector">
             <button class="route-choice active" data-route="balanced">
               <span
-                ><strong>Balanced exploration</strong
-                ><small>Illustrative science + safety</small></span
+                ><strong>Balanced Route</strong
+                ><small>Simulated route with intermediate stops</small></span
               ><span>↗</span>
             </button>
             <button class="route-choice" data-route="shortest">
               <span
-                ><strong>Shortest path</strong
-                ><small>Illustrative direct traverse</small></span
+                ><strong>Direct Route</strong
+                ><small>Simulated direct route to STP1</small></span
               ><span>↗</span>
             </button>
             <button class="route-choice" data-route="science">
               <span
-                ><strong>Science priority</strong
-                ><small>Illustrative extra stops</small></span
+                ><strong>Science Route</strong
+                ><small>Simulated route with additional stops</small></span
               ><span>↗</span>
             </button>
             <button class="route-choice" data-route="custom">
               <span
-                ><strong>Custom</strong><small>Set points and optional tasks</small></span
+                ><strong>Custom Route</strong><small>Place waypoints and add optional tasks</small></span
               ><span>↗</span>
             </button>
           </div>
@@ -127,7 +127,7 @@
       <main class="main">
         <header class="topbar">
           <div class="breadcrumb">
-            MISSIONS <span>/</span> MARSWALK PLANNER <span>/</span> JEZERO
+            JOURNEYS <span>/</span> MARSWALK PLANNER <span>/</span> JEZERO
           </div>
           <div class="topright">
             <span class="status"><span></span> CONCEPT PROTOTYPE</span
@@ -138,8 +138,8 @@
           <div class="hero-heading">
             <div>
               <div class="eyebrow accent">INTERPLANETARY SURVIVAL GUIDE</div>
-              <h1>Explore further.<br /><em>Return safer.</em></h1>
-              <p>Visual mission planning for the next generation of Mars explorers.</p>
+              <h1>Explore Mars.<br /><em>Plan Your Journey.</em></h1>
+              <p>Plan a simulated Marswalk using orbital and surface imagery.</p>
             </div>
             <div class="coordinates">
               REGION <strong>JEZERO CRATER</strong
@@ -153,30 +153,30 @@
               <div class="metric-foot">SIMULATION / NO MEASURED DISTANCE</div>
             </div>
             <div class="metric">
-              <div class="metric-label">Journey status <span>◷</span></div>
+              <div class="metric-label">Journey Status <span>◷</span></div>
               <div class="metric-value" id="duration">Ready</div>
-              <div class="metric-foot">SIMULATION / NO MEASURED DISTANCE</div>
+              <div class="metric-foot">SIMULATED JOURNEY</div>
             </div>
             <div class="metric">
-              <div class="metric-label">RISK INDEX <span>◈</span></div>
+              <div class="metric-label">Demo Risk Score · SIM <span>◈</span></div>
               <div class="metric-value" id="risk">25 <small>/ 100</small></div>
-              <div class="metric-foot">SIMULATED • LOWER IS BETTER</div>
+              <div class="metric-foot">SIMULATED SCORE • LOWER IS BETTER</div>
             </div>
             <div class="metric">
-              <div class="metric-label">SCIENCE TARGETS <span>⌾</span></div>
+              <div class="metric-label"><b id="stopsLabel">Route Stops</b> <span>⌾</span></div>
               <div class="metric-value" id="stops">2 <small>stops</small></div>
-              <div class="metric-foot">ILLUSTRATIVE POINTS</div>
+              <div class="metric-foot">SIMULATED · <span id="stopsUnit">ROUTE STOPS</span></div>
             </div>
           </div>
-          <div class="mission-status" aria-label="Current journey objective">
+          <div class="mission-status" aria-label="Current Task">
             <div>
-              <small>CURRENT OBJECTIVE</small
+              <small>Current Task</small
               ><strong id="activeObjective" role="status"></strong
               ><span id="activePosition"></span>
             </div>
             <div class="actions">
               <button id="quickPause" hidden>Pause</button
-              ><button id="quickReturn" hidden>Return now</button>
+              ><button id="quickReturn" hidden>Return to Start</button>
             </div>
           </div>
           <div class="content-grid">
@@ -217,11 +217,11 @@
                         id="deltaFrontRegion"
                         role="button"
                         tabindex="0"
-                        aria-label="Delta-front observation area: approximate region, open Skinner and Wildcat materials"
+                        aria-label="Delta-front Observation Area: approximate region, open Skinner Ridge and Wildcat Ridge materials"
                         aria-pressed="false"
                       >
                         <title>
-                          Delta-front observation area — approximate visual envelope, not
+                          Delta-front Observation Area — approximate visual envelope, not
                           a surveyed boundary
                         </title>
                         <polygon
@@ -231,7 +231,7 @@
                         <path class="region-leader" d="M225 302 L254 330" />
                         <g id="deltaFrontLabel" transform="translate(225 286)">
                           <rect x="-8" y="-22" width="266" height="30" rx="5" class="map-label-backplate" />
-                          <text>Delta-front observation area</text>
+                          <text>Delta-front Observation Area</text>
                         </g>
                       </g>
                     </g>
@@ -263,6 +263,12 @@
                       >
                         <circle r="22" />
                         <text y="5">⌂</text>
+                      </g>
+                      <g id="stp1Marker" class="marker" transform="translate(690 480)" role="button" tabindex="0" aria-label="STP1 · Study Delta Reference Images, simulated task location; open P1 reference imagery">
+                        <title>STP1 — Simulated Task Point 1. Conceptual task location; reference photos were taken at P1, not here.</title>
+                        <circle r="17" fill="#ed9f72" stroke="#fff0db" stroke-width="3" />
+                        <rect x="-38" y="22" width="76" height="30" rx="5" class="map-label-backplate" />
+                        <text y="44" style="font-size:19px">STP1</text>
                       </g>
                     </g>
                     <g id="customMapLayer">
@@ -299,14 +305,14 @@
                       >
                         <circle r="24" class="marker-halo" />
                         <circle r="11" class="marker-core" />
-                        <path class="site-label-leader" d="M14 8 L31 30" />
-                        <rect x="18" y="26" width="92" height="30" rx="5" class="map-label-backplate" />
-                        <text x="64" y="48">S2</text>
+                        <path class="site-label-leader" d="M-14 8 L-31 30" />
+                        <rect x="-110" y="26" width="92" height="30" rx="5" class="map-label-backplate" />
+                        <text x="-64" y="48">S2</text>
                       </g>
                       <g
                         class="marker"
                         data-name="Rock layer observation"
-                        data-description="Additional simulated science stop on Science Priority route."
+                        data-description="Additional simulated science stop on Science Route."
                         transform="translate(510 565)"
                       >
                         <circle r="24" class="marker-halo" />
@@ -333,7 +339,7 @@
                         id="photoMarker"
                         role="button"
                         tabindex="0"
-                        aria-label="P1 Perseverance landing-site imagery"
+                        aria-label="P1 · Landing-site Imagery"
                         class="marker"
                         transform="translate(300 359)"
                       >
@@ -374,10 +380,10 @@
                   validated.
                 </div>
                 <details class="note-map-toolbar" id="markerTools">
-                  <summary>Add Marker</summary>
+                  <summary>Add Note</summary>
                   <div class="marker-tools-body">
                     <button id="pickNotePosition" aria-pressed="false">
-                      Add note marker
+                      Choose Location
                     </button>
                     <button id="cancelNotePosition" disabled>Cancel adding</button>
                     <span id="mapNoteMode" role="status">Browse map</span>
@@ -390,7 +396,7 @@
                   href="https://www.jpl.nasa.gov/images/map-of-mars-jezero-crater/"
                   target="_blank"
                   rel="noreferrer"
-                  >View NASA image source ↗</a
+                  >Official Source</a
                 >
               </div>
             </section>
@@ -400,63 +406,64 @@
                 name="mission-sidebar"
                 open
               >
-                <summary>TASK OVERVIEW · PREVIEW ANYTIME</summary>
+                <summary>Tasks</summary>
                 <div class="panel-body">
                   <details open>
                     <summary>Geology</summary>
                     <button class="task-card" id="previewDelta">
-                      <strong>Identify the ancient delta</strong
+                      <strong>STP1 · Study Delta Reference Images</strong
                       ><small id="deltaTaskStatus"
-                        >P1 · Not completed · View details</small
+                        >STP1 · Not Completed · P1 reference imagery</small
                       >
                     </button>
                   </details>
                   <details open>
                     <summary>Environment</summary>
                     <button class="task-card" id="previewEnvironment">
-                      <strong>Record an environmental change</strong
+                      <strong>Record the Surroundings</strong
                       ><small id="extraTaskStatus"
                         >Choose any map point · View details</small
                       >
                     </button>
                   </details>
                   <details open>
-                    <summary>Delta-front regional materials</summary>
+                    <summary>Delta-front Observation Area</summary>
                     <button class="task-card" id="openRegion">
-                      <strong>Hogwallow Flats · Skinner · Wildcat</strong
+                      <strong>Explore the Delta-front Area</strong
                       ><small
                         >Approximate map area · Individual rock positions
                         unverified</small
                       >
                     </button>
                     <button class="task-card" data-observation-node="N2">
-                      <strong>Skinner: mark a layer or abrasion patch</strong
+                      <strong>Skinner Ridge · Mark a Layer or Abrasion Patch</strong
+                      ><small>An abrasion patch is a patch polished by the rover.</small
                       ><small id="skinnerTaskStatus"
-                        >Not completed · Preview anytime</small
+                        >Not Completed · Preview anytime</small
                       >
                     </button>
                     <button class="task-card" data-observation-node="N3">
-                      <strong>Wildcat: compare the close-ups</strong
+                      <strong>Wildcat Ridge · Compare Rock Textures</strong
                       ><small id="wildcatTaskStatus"
-                        >Not completed · Preview anytime</small
+                        >Not Completed · Preview anytime</small
                       >
                     </button>
                   </details>
                   <details id="customTaskGroup" open hidden>
-                    <summary>Custom route tasks</summary>
+                    <summary>Custom Route Tasks</summary>
                     <div id="customTaskCards"></div>
                   </details>
                 </div>
               </details>
               <details class="panel mission-panel sidebar-section" name="mission-sidebar">
-                <summary>MARSWALK / SIMULATION</summary>
+                <summary>Journey Controls</summary>
                 <div class="panel-body">
                   <h2 id="routeName"></h2>
                   <label for="missionRoute">Select route</label
                   ><select id="missionRoute">
-                    <option value="balanced">Balanced exploration</option>
-                    <option value="shortest">Shortest path</option>
-                    <option value="science">Science priority</option>
+                    <option value="balanced">Balanced Route</option>
+                    <option value="shortest">Direct Route</option>
+                    <option value="science">Science Route</option>
                     <option value="custom">Custom Route</option>
                   </select>
                   <details
@@ -465,23 +472,23 @@
                     open
                     aria-labelledby="customRouteHeading"
                   >
-                    <summary id="customRouteHeading">Custom Route editor</summary>
+                    <summary id="customRouteHeading">Route Editor</summary>
                     <p class="muted">
-                      Map coordinates: X, Y in schematic map units (not meters or
+                      Schematic Map Coordinates: X, Y in schematic map units (not meters or
                       latitude/longitude). X: 0–1000, left to right. Y: 0–773, top to
-                      bottom. Example: 250, 580. First point = start; last point =
-                      destination; intermediate points = waypoints.
+                      bottom. Example: 250, 580. First waypoint = start; last waypoint =
+                      destination; intermediate waypoints = route stops.
                     </p>
                     <div class="actions">
-                      <button id="drawCustomRoute">Add points on map</button>
-                      <button id="stopCustomDrawing" hidden>Stop placing points</button>
+                      <button id="drawCustomRoute">Place Waypoints</button>
+                      <button id="stopCustomDrawing" hidden>Finish Placing</button>
                     </div>
                     <p class="muted">
                       Click the map in travel order. Dragging still pans. Or enter
                       coordinates below.
                     </p>
                     <form id="waypointForm">
-                      <label for="waypointName">Point name</label>
+                      <label for="waypointName">Waypoint Name</label>
                       <input
                         id="waypointName"
                         maxlength="120"
@@ -506,8 +513,7 @@
                         required
                       />
                       <label class="check"
-                        ><input id="waypointHasTask" type="checkbox" />Set a task at this
-                        point</label
+                        ><input id="waypointHasTask" type="checkbox" />Add a Task to This Waypoint</label
                       >
                       <label for="waypointTitle"
                         >Task title (required when task is enabled)</label
@@ -517,7 +523,7 @@
                       <textarea id="waypointDescription" maxlength="2000"></textarea>
                       <div class="actions">
                         <button id="saveWaypoint" type="submit">
-                          Add coordinate point
+                          Add Waypoint
                         </button>
                         <button id="cancelWaypointEdit" type="button" hidden>
                           Cancel editing
@@ -526,39 +532,38 @@
                     </form>
                     <ol id="customWaypointList"></ol>
                     <button id="confirmCustomRoute" class="primary">
-                      Confirm custom route
+                      Confirm Route
                     </button>
                     <p id="customRouteStatus" class="muted" role="status">
-                      Add at least two points.
+                      Add at least two waypoints.
                     </p>
                   </details>
-                  <label for="mainTask">Primary task</label
-                  ><select id="mainTask">
-                    <option value="delta">Identify the ancient delta</option>
+                  <label for="mainTask">Main Task</label
+                  ><select id="mainTask" aria-describedby="mainTaskName">
+                    <option value="delta">STP1 · Study Delta Reference Images</option>
                   </select>
+                  <p id="mainTaskName" class="muted">STP1 · Study Delta Reference Images</p>
                   <label class="check"
-                    ><input type="checkbox" id="extraTask" />Optional task: record an
-                    environmental change</label
+                    ><input type="checkbox" id="extraTask" />Optional task: Record the Surroundings</label
                   >
                   <div class="objective">
-                    <small>Current objective</small
+                    <small>Current Task</small
                     ><strong id="objective" role="status"></strong
                     ><span id="position"></span>
                   </div>
                   <div class="actions">
-                    <button id="start" class="primary">Start journey</button
+                    <button id="start" class="primary">Start Journey</button
                     ><button id="pause" hidden>Pause</button
-                    ><button id="return" hidden>Return now</button>
+                    ><button id="return" hidden>Return to Start</button>
                     <button id="newJourney" class="primary" hidden>
-                      Plan a new journey
+                      New Journey
                     </button>
                   </div>
                   <label class="check"
-                    ><input type="checkbox" id="complete" disabled />I have completed the
-                    delta observation</label
+                    ><input type="checkbox" id="complete" disabled />Mark Task as Completed</label
                   >
                   <p id="taskHelp" class="muted">
-                    At P1, mark the feature and save your notes, then check the box to
+                    At STP1, use P1 reference imagery, mark the feature and save your notes, then check the box to
                     complete the task.
                   </p>
                   <p id="persistStatus" class="muted" role="status">
@@ -567,23 +572,23 @@
                 </div>
               </details>
               <details class="panel sidebar-section" name="mission-sidebar">
-                <summary>FIELD NOTES</summary>
+                <summary>Environment Notes</summary>
                 <div class="panel-body">
                   <p id="notePosition" class="muted" role="status">
-                    Select any map point, then write and save a field note.
+                    Choose a map location, then write and save an environment note.
                   </p>
-                  <label for="environment">What do you observe at this point?</label>
+                  <label for="environment">Describe the terrain, obstacles, or changes at this location.</label>
                   <textarea
                     id="environment"
                     maxlength="1000"
                     placeholder="For example: the simulated terrain changes from scattered rocks to a flatter surface."
                   ></textarea
-                  ><button id="saveEnvironment">Save field note</button>
+                  ><button id="saveEnvironment">Save Note</button>
                   <p id="noteStatus" role="status" class="muted"></p>
                 </div>
               </details>
               <details class="panel sidebar-section" name="mission-sidebar">
-                <summary>MISSION LOG</summary>
+                <summary>Journey Log</summary>
                 <div class="panel-body">
                   <label for="logFilter">View records</label
                   ><select id="logFilter">
@@ -614,10 +619,10 @@
           </div>
           <button id="closePhoto">Close</button>
         </div>
-        <nav class="observation-tabs" aria-label="Observation nodes">
-          <button data-observation-node="P1">P1 | Landing site</button
-          ><button data-observation-node="N2">Skinner</button
-          ><button data-observation-node="N3">Wildcat</button>
+        <nav class="observation-tabs" aria-label="Observation locations">
+          <button data-observation-node="P1">P1 · Landing-site Imagery</button
+          ><button data-observation-node="N2">Skinner Ridge</button
+          ><button data-observation-node="N3">Wildcat Ridge</button>
         </nav>
       </div>
       <p id="observationTaskPrompt"></p>
@@ -627,10 +632,10 @@
           type="checkbox"
           data-layer-control="imagery"
           checked
-        /><span id="photoLayerControlLabel">Landing-site imagery · P1</span> (turn off to
+        /><span id="photoLayerControlLabel">P1 · Landing-site Imagery</span> (turn off to
         hide this layer and close its card)</label
       >
-      <label for="observationImage">Image / instrument</label
+      <label for="observationImage">Select Image</label
       ><select id="observationImage"></select>
       <section
         id="beginnerHelp"
@@ -644,10 +649,10 @@
             id="showReferences"
             type="checkbox"
             aria-controls="photoReferences comparisonReferences"
-          />Show reference annotations</label
+          />Show Reference Marks</label
         >
         <small
-          >Reference: cyan dashed boxes · Your mark: yellow +. Examples only; use your own
+          >Reference: cyan dashed boxes · Your Mark: yellow +. Examples only; use your own
           words.</small
         >
       </section>
@@ -667,23 +672,22 @@
               hidden
               aria-hidden="true"
             ></div>
-            <span id="annotation" hidden>+<small>My observation</small></span>
+            <span id="annotation" hidden>+<small>Your Mark</small></span>
           </div>
           <p id="imageCaption"></p>
           <p class="credit" id="imageCredit"></p>
-          <label for="observation">Observation notes / visible difference</label
+          <label for="observation">Observation Notes</label
           ><textarea
             id="observation"
             maxlength="1000"
-            placeholder="Write one visible observation. Drafts are saved automatically for this node and image."
+            placeholder="Write one visible observation. Drafts are saved automatically for this location and image."
           ></textarea>
           <div class="actions">
-            <button id="saveDraft">Save unfinished draft</button
-            ><button id="saveObservation" class="primary">Save observation</button>
+            <button id="saveDraft">Save Draft</button
+            ><button id="saveObservation" class="primary">Save Observation</button>
           </div>
           <label class="check"
-            ><input id="confirmObservation" type="checkbox" />I confirm this node's task
-            is complete</label
+            ><input id="confirmObservation" type="checkbox" />Mark Task as Completed</label
           >
           <p id="observationStatus" role="status"></p>
           <p class="muted" id="observationTimes"></p>
@@ -691,7 +695,7 @@
         <aside>
           <section id="landingContext">
             <h3>Official landing-site inset | PIA24483</h3>
-            <p>Approximate camera location · P1. Position and camera pose are not verified.</p>
+            <p>P1 · Landing-site Imagery: official sources establish the landing-site identity. The marker on this regional map is an approximate location estimate. Exact camera pose and map registration remain unverified.</p>
             <a href="assets/landing-site.jpg" target="_blank" rel="noreferrer"
               ><img
                 class="orbital"
@@ -709,9 +713,9 @@
                 href="https://www.jpl.nasa.gov/images/pia24483-welcome-to-octavia-e-butler-landing/"
                 target="_blank"
                 rel="noreferrer"
-                >Official source</a
+                >Official Source</a
               >
-              | Published March 5, 2021; acquisition date not established.
+              | Published March 5, 2021; Image Captured: not established.
             </p>
             <p class="muted">
               The regional estimate (300,359) comes from approximate reading of the map
@@ -737,42 +741,41 @@
               ></div>
             </div>
             <p>
-              Use the Wildcat close-up in the main panel to compare visible texture with
-              this Skinner image. The original scale bars are retained; image colors alone
+              Use the Wildcat Ridge close-up in the main panel to compare visible texture with
+              this Skinner Ridge image. The original scale bars are retained; image colors alone
               do not identify minerals or life.
             </p>
             <p class="credit">
-              PIA24926-left | Captured June 29, 2022 (Sol 482) | SHERLOC/WATSON |
+              PIA24926-left | Image Captured June 29, 2022 (Sol 482) | SHERLOC/WATSON |
               NASA/JPL-Caltech/MSSS |
               <a
                 href="https://science.nasa.gov/resource/two-abrasion-patches-from-perseverance-at-jezero-delta/"
                 target="_blank"
                 rel="noreferrer"
-                >Paired close-up source</a
+                >Official Source</a
               >
             </p>
           </section>
           <section id="regionalNodeContext" hidden>
-            <h3>Delta-front regional materials</h3>
+            <h3>Delta-front Observation Area</h3>
             <p>
-              Skinner and Wildcat are identified targets in the same local observation
+              Skinner Ridge and Wildcat Ridge are identified targets in the same local observation
               cluster. Their absolute camera and target coordinates have not been
               established here; these cards are not proximity-triggered.
             </p>
-            <button id="regionFromPhoto">Open official regional context</button>
+            <button id="regionFromPhoto">View Regional Images</button>
           </section>
         </aside>
       </div>
     </dialog>
     <dialog id="regionDialog" aria-labelledby="regionTitle">
       <label class="check layer-dialog-control"
-        ><input type="checkbox" data-layer-control="deltaFront" checked />Delta-front
-        observation area (turn off to close)</label
+        ><input type="checkbox" data-layer-control="deltaFront" checked />Delta-front Observation Area (turn off to close)</label
       >
       <div class="dialog-head">
         <div>
           <div class="eyebrow">REGIONAL MATERIALS | APPROXIMATE OBSERVATION AREA</div>
-          <h2 id="regionTitle">Hogwallow Flats | Delta-front rock observations</h2>
+          <h2 id="regionTitle">Delta-front Observation Area</h2>
         </div>
         <button id="closeRegion">Close</button>
       </div>
@@ -781,7 +784,7 @@
         Wildcat Ridge are nearby rock targets in this local observation cluster. Their
         individual positions and the exact region boundary are not registered to our
         regional map. These materials stay available through this list, independently of
-        All/Nearby filtering.
+        P1 Visibility filtering.
       </p>
       <p id="regionPrecision" class="region-precision-note">
         The map polygon is a broad visual envelope along the delta's eastern/southeastern
@@ -789,7 +792,7 @@
         against the regional HRSC image and official HiRISE views, not fitted to surveyed
         control points. Its vertices express approximate coverage only, with no quantified
         accuracy. They do not locate either individual rock, define a traversable route,
-        or participate in Nearby filtering.
+        or participate in Show When Nearby · SIM filtering.
       </p>
       <div class="region-grid">
         <figure>
@@ -800,13 +803,13 @@
           /></a>
           <figcaption>
             Orbital context, PIA24923 | MRO/HiRISE | NASA/JPL-Caltech/University of
-            Arizona/USGS. Published September 15, 2022; acquisition date unresolved. The
+            Arizona/USGS. Published September 15, 2022; Image Captured: not established. The
             red star is the rover in September 2022, not P1 or a June camera pose.
             <a
               href="https://www.jpl.nasa.gov/images/pia24923-perseverance-exploring-the-front-of-the-delta/"
               target="_blank"
               rel="noreferrer"
-              >Source</a
+              >Official Source</a
             >
           </figcaption>
         </figure>
@@ -817,7 +820,7 @@
               alt="Official Mastcam-Z ground panorama with Skinner Ridge labeled upper right and Wildcat Ridge lower left"
           /></a>
           <figcaption>
-            Ground panorama (not an orbital map), PIA24924 Figure A | August 4, 2022 / Sol
+            Ground panorama (not an orbital map), PIA24924 Figure A | Image Captured: August 4, 2022 / Sol
             518 | Mastcam-Z | Enhanced color | NASA/JPL-Caltech/ASU/MSSS. The official
             labels identify both targets; the caption places them about 20 m apart, not a
             measured walking route.
@@ -825,7 +828,7 @@
               href="https://www.jpl.nasa.gov/images/pia24924-2-perseverance-sampling-locations-in-jezeros-delta/"
               target="_blank"
               rel="noreferrer"
-              >Source</a
+              >Official Source</a
             >
           </figcaption>
         </figure>
@@ -834,7 +837,7 @@
         <button class="task-card" data-observation-node="N2">
           <strong>Skinner Ridge</strong
           ><small
-            >Workspace + WATSON close-up | Mark a layer or abrasion patch</small
+            >Workspace + WATSON close-up | Mark a layer or abrasion patch (a patch polished by the rover) (a patch polished by the rover)</small
           ></button
         ><button class="task-card" data-observation-node="N3">
           <strong>Wildcat Ridge</strong
@@ -846,38 +849,38 @@
     </dialog>
     <dialog id="fieldNoteDialog" aria-labelledby="fieldNoteTitle">
       <label class="check layer-dialog-control"
-        ><input type="checkbox" data-layer-control="notes" checked />Environmental records
+        ><input type="checkbox" data-layer-control="notes" checked />Environment Notes
         (turn off to close)</label
       >
       <div class="dialog-head">
-        <h2 id="fieldNoteTitle">Saved field note</h2>
-        <button id="closeFieldNote">Close ×</button>
+        <h2 id="fieldNoteTitle">Environment Note</h2>
+        <button id="closeFieldNote">Close</button>
       </div>
       <p id="fieldNoteMeta" class="muted"></p>
       <p id="fieldNoteContent" style="white-space: pre-wrap; overflow-wrap: anywhere"></p>
-      <label for="editFieldNote">Edit observation</label>
+      <label for="editFieldNote">Edit Note</label>
       <textarea id="editFieldNote" maxlength="1000"></textarea>
       <div class="actions">
-        <button id="updateFieldNote">Save changes</button>
-        <button id="moveFieldNote">Move marker</button>
-        <button id="deleteFieldNote">Delete marker</button>
+        <button id="updateFieldNote">Save Note</button>
+        <button id="moveFieldNote">Move Note</button>
+        <button id="deleteFieldNote">Delete Note</button>
       </div>
       <p id="fieldNoteFeedback" role="status"></p>
     </dialog>
     <dialog id="environmentTaskDialog" aria-labelledby="environmentTaskTitle">
-      <h2 id="environmentTaskTitle">Record an environmental change</h2>
+      <h2 id="environmentTaskTitle">Record the Surroundings</h2>
       <p>
-        Choose any point on the map, describe the terrain or a visible change, and save a
-        field note. Open its N marker to review, edit, move or delete it. No journey is
+        Choose any location on the map, describe the terrain, obstacles, or changes, and save an
+        environment note. Open its N marker to review, edit, move or delete it. No journey is
         required.
       </p>
       <button id="closeEnvironmentTask">Close</button>
-      <button id="startEnvironmentTask">Choose a map point</button>
+      <button id="startEnvironmentTask">Choose Location</button>
     </dialog>
     <dialog id="customTaskDialog" aria-labelledby="customTaskTitle">
       <label class="check layer-dialog-control"
-        ><input type="checkbox" data-layer-control="customMap" checked />Custom route
-        &amp; waypoints (turn off to close)</label
+        ><input type="checkbox" data-layer-control="customMap" checked />Custom Route
+        &amp; Waypoints (turn off to close)</label
       >
       <div class="dialog-head">
         <h2 id="customTaskTitle">Waypoint task</h2>
@@ -890,10 +893,10 @@
       ></p>
       <p id="customTaskStatus" role="status"></p>
       <form id="pointEditForm">
-        <label for="pointName">Point name</label>
+        <label for="pointName">Waypoint Name</label>
         <input id="pointName" maxlength="120" placeholder="For example: Delta overlook" />
         <p class="muted">
-          Schematic map units: X 0–1000 (left to right), Y 0–773 (top to bottom). Not
+          Schematic Map Coordinates: X 0–1000 (left to right), Y 0–773 (top to bottom). Not
           meters or geographic coordinates.
         </p>
         <div class="coordinate-fields">
@@ -907,7 +910,7 @@
           </div>
         </div>
         <label class="check"
-          ><input id="pointHasTask" type="checkbox" />Set a task at this point</label
+          ><input id="pointHasTask" type="checkbox" />Add a Task to This Waypoint</label
         >
         <label for="pointTitle">Task title (required when task is enabled)</label>
         <input id="pointTitle" maxlength="120" />
@@ -915,11 +918,11 @@
         <textarea id="pointDescription" maxlength="2000"></textarea>
         <p id="pointEditStatus" role="status"></p>
         <div class="actions">
-          <button type="submit" class="primary">Save point</button
+          <button type="submit" class="primary">Save Waypoint</button
           ><button id="cancelPointEdit" type="button">Cancel</button>
         </div>
       </form>
-      <button id="completeCustomTask" class="primary">Complete waypoint task</button>
+      <button id="completeCustomTask" class="primary">Complete Task</button>
     </dialog>
     <script src="observation-data.js"></script>
     <script src="observation-viewer.js"></script>

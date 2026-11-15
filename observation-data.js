@@ -8,7 +8,7 @@ const OBSERVATION_DATA = {
   regions: {
     deltaFront: {
       id: 'delta-front',
-      name: 'Delta-front observation area',
+      name: 'Delta-front Observation Area',
       frame: 'regional-1000x773',
       outline: [
         [245, 326],
@@ -53,7 +53,7 @@ const OBSERVATION_DATA = {
       title: 'Skinner Ridge workspace',
       color: 'Enhanced color',
       caption:
-        'Full workspace mosaic: layered outcrop above and a bright circular abrasion patch below. Black areas are gaps in mosaic coverage.',
+        'Full workspace mosaic: layered outcrop above and a bright circular abrasion patch (a patch polished by the rover) below. Black areas are gaps in mosaic coverage.',
       captured: 'June 30–July 8, 2022 (PDT), sols 484–492',
       published: '2022-09-15',
       instrument: 'Mastcam-Z',
@@ -89,7 +89,7 @@ const OBSERVATION_DATA = {
       title: 'Wildcat Ridge workspace',
       color: 'Enhanced color',
       caption:
-        'Full mosaic showing the bright abrasion patch and two core holes; black areas are mosaic gaps.',
+        'Full mosaic showing the bright abrasion patch (a patch polished by the rover) and two core holes; black areas are mosaic gaps.',
       captured: '2022-08-04',
       published: '2022-09-15',
       instrument: 'Mastcam-Z',
@@ -107,7 +107,7 @@ const OBSERVATION_DATA = {
       title: 'Wildcat Ridge close-up | Berry Hollow',
       color: 'Published color; processing not specified in the caption',
       caption:
-        'WATSON view of the abraded surface. Compare its visible texture with the Skinner close-up, without inferring composition from color alone.',
+        'WATSON view of the abraded surface. Compare its visible texture with the Skinner Ridge close-up, without inferring composition from color alone.',
       captured: '2022-07-21',
       published: '2022-09-15',
       instrument: 'SHERLOC / WATSON',
@@ -158,7 +158,7 @@ const OBSERVATION_DATA = {
     P1: {
       id: 'P1',
       taskId: 'T-P1',
-      name: 'Landing site | distant delta view',
+      name: 'P1 · Delta View from the Landing Site',
       task: 'Identify the distant delta remnant',
       instructions:
         'Mark the raised delta remnant and save one visible feature. The camera is at the landing site; the target is about 2.3 km to the west. Confirm completion after reaching the simulated P1 range.',
@@ -177,9 +177,9 @@ const OBSERVATION_DATA = {
       id: 'N2',
       taskId: 'T-N2',
       name: 'Skinner Ridge',
-      task: 'Mark a rock layer or abrasion patch',
+      task: 'Skinner Ridge · Mark a Layer or Abrasion Patch',
       instructions:
-        'On the workspace photo or close-up, mark one visible layer or abrasion patch. Save one sentence describing what you see, then confirm completion.',
+        'On the workspace photo or close-up, mark one visible layer or abrasion patch (a patch polished by the rover). Save one sentence describing what you see, then confirm completion.',
       images: ['PIA24925', 'PIA24926-left'],
       defaultImageId: 'PIA24925',
       anchor: null,
@@ -188,9 +188,9 @@ const OBSERVATION_DATA = {
       id: 'N3',
       taskId: 'T-N3',
       name: 'Wildcat Ridge',
-      task: 'Compare the two rock close-ups',
+      task: 'Wildcat Ridge · Compare Rock Textures',
       instructions:
-        'View the paired WATSON close-ups of Wildcat and Skinner. Record one visible difference, save the comparison, then confirm completion. A marker is optional. These images alone do not establish mineral composition or life.',
+        'View the paired WATSON close-ups of Wildcat Ridge and Skinner Ridge. Record one visible difference, save the comparison, then confirm completion. A marker is optional. These images alone do not establish mineral composition or life.',
       images: ['PIA24926-right', 'PIA24928'],
       defaultImageId: 'PIA24926-right',
       anchor: null,

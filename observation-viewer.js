@@ -23,7 +23,7 @@ function createObservationViewer() {
       boxes: [{ x: 0.43, y: 0.35, w: 0.16, h: 0.17, label: 'Texture sample' }],
     },
     PIA24928: {
-      hint: 'The pale round patch is where the rover scraped this rock. Choose the Wildcat close-up above to compare its grains and texture with Skinner. Everyday words such as “smoother” or “more speckled” are enough.',
+      hint: 'The pale round patch is where the rover scraped this rock. Choose the Wildcat Ridge close-up above to compare its grains and texture with Skinner Ridge. Everyday words such as “smoother” or “more speckled” are enough.',
       placeholder:
         'Describe what you notice. Use the paired close-ups to save the comparison task.',
       boxes: [{ x: 0.62, y: 0.285, w: 0.055, h: 0.07, label: 'Abrasion patch' }],
@@ -35,7 +35,7 @@ function createObservationViewer() {
     $('beginnerHint').textContent = tips?.hint || '';
     $('observation').placeholder =
       tips?.placeholder ||
-      'Write one visible observation. Drafts are saved automatically for this node and image.';
+      'Write one visible observation. Drafts are saved automatically for this location and image.';
     for (const [id, imageId] of [
       ['photoReferences', currentObservationImage],
       ['comparisonReferences', 'PIA24926-left'],
@@ -57,7 +57,7 @@ function createObservationViewer() {
           height: `${box.h * 100}%`,
         });
         const label = document.createElement('span');
-        label.textContent = `Ref: ${box.label}`;
+        label.textContent = `Reference: ${box.label}`;
         outline.append(label);
         overlay.append(outline);
       }
@@ -93,20 +93,20 @@ function createObservationViewer() {
   }
   function canConfirmNode(nodeId) {
     if (!observationEvidence(nodeId)) return false;
-    return nodeId !== 'P1' || (state.phase === 'outbound' && near());
+    return nodeId !== 'P1' || (state.phase === 'outbound' && (state.route === 'custom' ? near() : atSTP1()));
   }
   function refreshObservationControls() {
     const node = observationState(currentObservationNode);
     $('saveObservation').disabled = false;
-    $('confirmObservation').checked = node.done;
+    $('confirmObservation').checked = currentObservationNode === 'P1' && state.route !== 'custom' ? state.stp1Done : node.done;
     $('confirmObservation').disabled = !canConfirmNode(currentObservationNode);
     $('skinnerTaskStatus').textContent =
-      `${observationState('N2').done ? 'Complete' : 'Not completed'} · Regional materials · Preview anytime`;
+      `${observationState('N2').done ? 'Completed' : 'Not Completed'} · Regional materials · Preview anytime`;
     $('wildcatTaskStatus').textContent =
-      `${observationState('N3').done ? 'Complete' : 'Not completed'} · Regional materials · Preview anytime`;
+      `${observationState('N3').done ? 'Completed' : 'Not Completed'} · Regional materials · Preview anytime`;
     const record = activeImageRecord();
     $('observationTimes').textContent =
-      `Your draft updated: ${record.draftUpdatedAt ? new Date(record.draftUpdatedAt).toLocaleString('en-GB') : 'not yet'} · Observation saved: ${record.saved?.savedAt ? new Date(record.saved.savedAt).toLocaleString('en-GB') : 'not yet'} · Task confirmed: ${node.completedAt ? new Date(node.completedAt).toLocaleString('en-GB') : 'not yet'}. These are user operation times, separate from the image capture date above.`;
+      `Your draft updated: ${record.draftUpdatedAt ? new Date(record.draftUpdatedAt).toLocaleString('en-GB') : 'not yet'} · Your Observation Saved: ${record.saved?.savedAt ? new Date(record.saved.savedAt).toLocaleString('en-GB') : 'not yet'} · Task confirmed: ${node.completedAt ? new Date(node.completedAt).toLocaleString('en-GB') : 'not yet'}. These are user operation times, separate from the image capture date above.`;
   }
   function paintMark() {
     const m = activeImageRecord().mark;
@@ -129,8 +129,9 @@ function createObservationViewer() {
     $('photoCanvas').setAttribute('aria-label', `Mark a feature in ${image.title}`);
     $('photoMetadata').replaceChildren();
     const fields = [
+      ['Location / task ID', `${node.id} / ${node.taskId}`],
       ['Image ID', image.id],
-      ['Captured', image.captured || 'Not established'],
+      ['Image Captured', image.captured || 'Not established'],
       ['Instrument', `${image.mission} / ${image.instrument}`],
       ['Color / frame', `${image.color}. Full published frame; no crop.`],
       [
@@ -163,7 +164,7 @@ function createObservationViewer() {
     link.href = image.page;
     link.target = '_blank';
     link.rel = 'noreferrer';
-    link.textContent = 'Official source ↗';
+    link.textContent = 'Official Source';
     $('imageCredit').append(credit, link);
     $('landingContext').hidden = node.id !== 'P1';
     $('regionalNodeContext').hidden = node.id === 'P1';
@@ -175,8 +176,10 @@ function createObservationViewer() {
     paintReferences();
     $('observationStatus').textContent =
       node.id === 'P1' && !canConfirmNode('P1')
-        ? 'Preview and draft saving are available now. To confirm P1, save a marked observation and reach its simulated range during an outbound journey.'
-        : 'Each node and image keeps its own draft and saved evidence. Save your observation, then confirm the task yourself.';
+        ? state.route === 'custom'
+          ? 'Preview and draft saving are available now. To complete the P1 observation task, save a marked observation and reach the simulated P1 range during an outbound journey. The range is simulated only; exact camera pose and map registration remain unverified.'
+          : 'Preview and draft saving are available now. To complete STP1, save a marked P1 reference observation and reach STP1 during an outbound journey. P1 was photographed at Octavia E. Butler Landing, not STP1.'
+        : 'Each location and image keeps its own draft and saved evidence. Save your observation, then confirm the task yourself.';
     paintMark();
     refreshObservationControls();
     save();
@@ -195,7 +198,7 @@ function createObservationViewer() {
       state.paused = true;
       log(
         'control',
-        `Journey paused to view observation node ${nodeId}`,
+        `Journey paused to view Observation · ${node.name}`,
         getSimulatedPosition(),
         observationLogMetadata(nodeId, observationState(nodeId).activeImageId),
       );
@@ -203,13 +206,15 @@ function createObservationViewer() {
     if ($('regionDialog').open) $('regionDialog').close();
     currentObservationNode = nodeId;
     $('showReferences').checked = false;
-    $('observationNodeId').textContent = `${nodeId} / ${node.taskId}`;
+    $('observationNodeId').textContent = 'Observation';
     $('photoTitle').textContent = node.name;
-    $('observationTaskPrompt').textContent = node.instructions;
+    $('observationTaskPrompt').textContent = nodeId === 'P1' && state.route !== 'custom'
+      ? 'STP1 · Study Delta Reference Images. STP1 is a simulated task location shared by the three preset routes. Use this real reference image captured at P1 to study the delta. Camera: Octavia E. Butler Landing; target: delta remnant about 2.3 km west. This image was not taken at STP1.'
+      : `${node.task}. ${node.instructions}`;
     $('photoLayerControl').dataset.layerControl =
       nodeId === 'P1' ? 'imagery' : 'deltaFront';
     $('photoLayerControlLabel').textContent =
-      nodeId === 'P1' ? 'Landing-site imagery · P1' : 'Delta-front observation area';
+      nodeId === 'P1' ? 'P1 · Landing-site Imagery' : 'Delta-front Observation Area';
     document
       .querySelectorAll('.observation-tabs [data-observation-node]')
       .forEach((button) =>
@@ -295,7 +300,7 @@ function createObservationViewer() {
       }),
     );
     $('observationStatus').textContent =
-      'Unfinished draft saved for this node and image. Task completion has not changed.';
+      'Unfinished draft saved for this location and image. Task completion has not changed.';
   };
   $('saveObservation').onclick = () => {
     saveDraftRecord();
@@ -320,7 +325,7 @@ function createObservationViewer() {
     }
     if (nodeId === 'N3' && currentObservationImage !== 'PIA24926-right') {
       $('observationStatus').textContent =
-        'Your draft is saved. Select the Wildcat WATSON close-up to compare it with the matching Skinner close-up before saving the task evidence.';
+        'Your draft is saved. Select the Wildcat Ridge WATSON close-up to compare it with the matching Skinner Ridge close-up before saving the task evidence.';
       return;
     }
     const capturedAt = OBSERVATION_DATA.images[currentObservationImage].captured;
@@ -344,20 +349,22 @@ function createObservationViewer() {
     );
     render();
     $('observationStatus').textContent =
-      'Observation saved. Confirm this node’s task using the checkbox when eligible.';
+      'Observation saved. Confirm this task using the checkbox when eligible.';
   };
   function setNodeCompletion(nodeId, checked) {
     if (checked && !canConfirmNode(nodeId)) return;
     const node = observationState(nodeId);
+    if (nodeId === 'P1' && state.route !== 'custom') state.stp1Done = checked;
     node.done = checked;
     node.completedAt = checked ? new Date().toISOString() : null;
     const evidence = observationEvidence(nodeId);
     const imageId = evidence?.imageId || OBSERVATION_DATA.nodes[nodeId].defaultImageId;
     log(
       'task',
-      `${checked ? 'Confirmed complete' : 'Marked not completed'}: ${OBSERVATION_DATA.nodes[nodeId].task}`,
+      `${checked ? 'Completed' : 'Not Completed'}: ${nodeId === 'P1' && state.route !== 'custom' ? 'STP1 · Study Delta Reference Images, using P1 reference imagery from Octavia E. Butler Landing' : OBSERVATION_DATA.nodes[nodeId].task}`,
       getSimulatedPosition(),
-      observationLogMetadata(nodeId, imageId, evidence),
+      { ...observationLogMetadata(nodeId, imageId, evidence),
+        taskId: nodeId === 'P1' && state.route !== 'custom' ? 'T-STP1' : node.taskId },
     );
     render();
   }
@@ -370,7 +377,7 @@ function createObservationViewer() {
     if ($('photoDialog').open) $('photoDialog').close();
     if (active() && !state.paused) {
       state.paused = true;
-      log('control', 'Journey paused to view delta-front regional materials');
+      log('control', 'Journey paused to view the Delta-front Observation Area');
       render();
     }
     if (!$('regionDialog').open) $('regionDialog').showModal();

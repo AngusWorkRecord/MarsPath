@@ -172,11 +172,11 @@ const { pathToFileURL } = require('node:url');
       assert.equal(await page.locator('#regionDialog').isVisible(), false);
     }
     await toggle('notes', true);
-    await page.getByRole('button', { name: 'Open field note N1', exact: true }).click();
+    await page.getByRole('button', { name: 'Open Environment Note · N1', exact: true }).click();
     await page.locator('#editFieldNote').fill('Unsubmitted environmental edit');
     await page.locator('#fieldNoteDialog [data-layer-control="notes"]').uncheck();
     await toggle('notes', true);
-    await page.getByRole('button', { name: 'Open field note N1', exact: true }).click();
+    await page.getByRole('button', { name: 'Open Environment Note · N1', exact: true }).click();
     assert.equal(
       await page.locator('#editFieldNote').inputValue(),
       'Unsubmitted environmental edit',

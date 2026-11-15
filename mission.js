@@ -1,20 +1,22 @@
 'use strict';
+const SIM_BASE = [250, 580];
+const STP1 = { x: 690, y: 480, name: 'Simulated Task Point 1' };
 const routes = {
   custom: { name: 'Custom Route', risk: null, stops: 0, points: '' },
   balanced: {
-    name: 'Balanced exploration',
+    name: 'Balanced Route',
     risk: 25,
     stops: 2,
     points: '250,580 300,510 355,350 470,345 610,412 690,480',
   },
   shortest: {
-    name: 'Shortest path',
+    name: 'Direct Route',
     risk: 65,
     stops: 1,
     points: '250,580 300,359 455,465 570,435 690,480',
   },
   science: {
-    name: 'Science priority',
+    name: 'Science Route',
     risk: 48,
     stops: 3,
     points: '250,580 300,475 355,350 470,345 610,412 510,565 690,480',
@@ -26,7 +28,7 @@ const $ = (id) => document.getElementById(id),
 const photoLocations = Object.values(OBSERVATION_DATA.nodes)
   .filter((node) => node.anchor)
   .map((node) => ({ id: node.id, markerId: 'photoMarker', ...node.anchor }));
-const nearbyRadius = 120; // Schematic map units only; never converted to real meters.
+const nearbyRadius = 120; // Schematic Map Coordinates (map units) only; never converted to real meters.
 let currentObservationNode = 'P1';
 let currentObservationImage = 'PIA24485';
 function createObservationRecords() {
@@ -99,7 +101,8 @@ try {
   }
 } catch { /* Leave the accessible default open when storage is unavailable. */ }
 const initial = () => ({
-  version: 2,
+  version: 3,
+  stp1Done: false,
   route: 'balanced',
   presetRoute: 'balanced',
   phase: 'planning',
@@ -136,7 +139,7 @@ try {
   const saved = JSON.parse(raw);
   if (saved) {
     if (
-      ![1, 2].includes(saved.version) ||
+      ![1, 2, 3].includes(saved.version) ||
       !routes[saved.route] ||
       !['planning', 'outbound', 'returning', 'finished'].includes(saved.phase) ||
       !Number.isFinite(saved.progress) ||
@@ -197,7 +200,8 @@ try {
     state = {
       ...state,
       ...saved,
-      version: 2,
+      version: 3,
+      stp1Done: saved.version === 3 && saved.stp1Done === true,
       nodeObservations: records,
       layers: { ...state.layers, ...saved.layers },
     };
@@ -219,7 +223,10 @@ function points() {
     const start = coords[0] || [250, 580];
     return [start, start];
   }
-  return routes[state.route].points.split(' ').map((p) => p.split(',').map(Number));
+  const path = routes[state.route].points.split(' ').map((p) => p.split(',').map(Number));
+  path[0] = SIM_BASE;
+  path[path.length - 1] = [STP1.x, STP1.y];
+  return path;
 }
 function last() {
   return points().length - 1;
@@ -230,6 +237,10 @@ function active() {
 function isPhotoNearby(photo) {
   const pos = getSimulatedPosition();
   return Math.hypot(pos.x - photo.x, pos.y - photo.y) <= nearbyRadius;
+}
+function atSTP1() {
+  const pos = getSimulatedPosition();
+  return state.route !== 'custom' && Math.hypot(pos.x - STP1.x, pos.y - STP1.y) < 0.001;
 }
 function near() {
   return isPhotoNearby(photoLocations.find((photo) => photo.id === 'P1'));
@@ -307,7 +318,7 @@ function renderLogs() {
     small.textContent = `${new Date(r.time).toLocaleString('en-GB')} · ${phaseLabel} · ${routes[r.route].name} · Segment progress ${r.progress.toFixed(2)} · ${positionLabel} (${r.position.x.toFixed(0)}, ${r.position.y.toFixed(0)})`;
     text.textContent = r.content;
     if (r.nodeId)
-      small.textContent += ` · Node ${r.nodeId} / ${r.taskId} / ${r.imageId} · Image captured: ${r.capturedAt || 'not established'} (separate from operation time above)`;
+      small.textContent += ` · Node ${r.nodeId} / ${r.taskId} / ${r.imageId} · Image Captured: ${r.capturedAt || 'not established'} (separate from operation time above)`;
     li.append(small, text);
     $('records').append(li);
   }
@@ -422,10 +433,13 @@ function render() {
     finished: 'Returned',
   }[state.phase];
   $('risk').textContent = state.route === 'custom' ? 'Not assessed' : r.risk + ' / 100';
-  $('stops').textContent =
-    state.route === 'custom'
-      ? state.customPoints.filter((p) => p.hasTask).length + ' tasks'
-      : r.stops + ' SIM';
+  $('stopsLabel').textContent = state.route === 'custom' ? 'Tasks' : 'Route Stops';
+  $('stopsUnit').textContent = state.route === 'custom' ? 'TASKS' : 'ROUTE STOPS';
+  const stopCount = state.route === 'custom'
+    ? state.customPoints.filter((p) => p.hasTask).length
+    : r.stops;
+  const stopUnit = state.route === 'custom' ? 'task' : 'stop';
+  $('stops').textContent = `${stopCount} ${stopUnit}${stopCount === 1 ? '' : 's'}`;
   const customRoutePoints = state.customPoints.map((p) => `${p.x},${p.y}`).join(' ');
   for (const id of ['routeLine', 'routeGlow'])
     $(id).setAttribute(
@@ -448,29 +462,25 @@ function render() {
   $('newJourney').hidden = state.phase !== 'finished';
   $('return').hidden = state.phase !== 'outbound';
   $('return').disabled = state.phase !== 'outbound';
-  $('complete').checked = observationState('P1').done;
+  $('complete').checked = state.stp1Done;
   $('complete').disabled = !canConfirmNode('P1');
   $('objective').textContent = planning
     ? 'Confirm your route and tasks, then start the journey'
     : state.phase === 'finished'
-      ? `Back at the starting point · ${observationState('P1').done ? 'Observation complete' : 'Observation not completed'}`
+      ? `Back at the starting point · ${state.stp1Done ? 'STP1 · Completed' : 'STP1 · Not Completed'}`
       : state.phase === 'returning'
         ? 'Retrace your route to the simulated starting point'
-        : observationState('P1').done
+        : state.stp1Done
           ? state.extra && !environmentTaskDone()
-            ? 'Optional task: record an environmental change, or return now.'
-            : 'Observation complete. Continue exploring or return now.'
-          : near()
-            ? 'Pause and open P1. Mark the ancient delta and save your observation'
-            : 'Find P1 imagery along your route, or return at any time.';
+            ? 'Optional task: Record the Surroundings, or return to start.'
+            : 'STP1 · Completed. Return to the simulated base when ready.'
+          : atSTP1()
+            ? 'STP1 reached. Open the task, use P1 reference imagery and save an observation.'
+            : 'Travel to STP1 (Simulated Task Point 1), or return at any time.';
   $('position').textContent = positionText();
-  $('taskHelp').textContent = observationEvidence('P1')
-    ? state.phase === 'outbound'
-      ? 'Observation saved. Check the box to confirm completion.'
-      : `Observation saved · ${observationState('P1').done ? 'Completed' : 'Not completed'}.`
-    : state.phase === 'finished'
-      ? 'This journey ended with the delta observation not completed.'
-      : 'Near P1, mark the feature and save notes, then check the box to complete the task. You may return without completing it.';
+  $('taskHelp').textContent = state.stp1Done
+    ? 'STP1 · Completed. P1 imagery was captured at Octavia E. Butler Landing, not STP1.'
+    : 'Reach STP1, open its task and use P1 reference imagery to mark a feature and save notes. Confirm completion at STP1. P1 is the actual image entry, not this simulated destination.';
   $('markerMode').value = state.mode;
   $('markerMode').disabled = false;
   renderLayers();
@@ -496,7 +506,7 @@ function render() {
   });
   const nearbyCount = photoLocations.filter(isPhotoNearby).length;
   $('nearbySummary').textContent =
-    `Nearby: ${nearbyCount}/${photoLocations.length}. Simulated radius: ${nearbyRadius} map units; not real meters.`;
+    `${state.mode === 'all' ? 'Always Show' : 'Show When Nearby · SIM'} · P1 ${nearbyCount ? 'within' : 'outside'} simulated range. Simulated radius: ${nearbyRadius} map units; not real meters.`;
   $('saveEnvironment').disabled = !state.notePosition;
   $('environment').disabled = false;
   refreshObservationControls();
@@ -558,9 +568,9 @@ $('start').onclick = () => {
   log(
     'start',
     (state.route === 'custom'
-      ? 'Journey started: custom route'
-      : 'Journey started: identify the ancient delta') +
-      (state.extra ? '; optional environmental-change note' : ''),
+      ? 'Journey started: Custom Route'
+      : `Journey started: ${routes[state.route].name} · STP1 · Study Delta Reference Images. STP1 is a simulated task location; reference photos were taken at P1 (Octavia E. Butler Landing)`) +
+      (state.extra ? '; optional task: Record the Surroundings' : ''),
   );
   render();
   if (state.route === 'custom') reachCustomWaypoint(0);
@@ -619,7 +629,9 @@ $('environment').oninput = (e) => {
 $('saveEnvironment').onclick = () => {
   const text = $('environment').value.trim();
   if (!state.notePosition || !text) {
-    $('noteStatus').textContent = 'Select a map point and enter your observation first.';
+    $('noteStatus').textContent = !text
+      ? 'Enter a note before saving.'
+      : 'Choose a location before saving.';
     return;
   }
   state.mapNotes.push({
@@ -636,7 +648,7 @@ $('saveEnvironment').onclick = () => {
   $('environment').value = '';
   save();
   $('noteStatus').textContent =
-    'Field note saved. Click its N marker on the map to read it again.';
+    'Note saved. Select its map marker to view it.';
   renderMapNotes();
   render();
 };
@@ -645,13 +657,13 @@ $('logFilter').onchange = renderLogs;
 document.querySelectorAll('#scienceLayer .marker').forEach((m, i) => {
   m.setAttribute('role', 'button');
   m.setAttribute('tabindex', '0');
-  m.setAttribute('aria-label', `S${i + 1} simulated site: ${m.dataset.name}`);
+  m.setAttribute('aria-label', `Simulated Science Site · S${i + 1}: ${m.dataset.name}`);
   m.querySelector('text').textContent = `S${i + 1} SIM`;
   m.onclick = () => {
     if (!state.layers.science || pickingNote || drawingCustom) return;
     const tip = $('mapTooltip');
     tip.hidden = false;
-    tip.textContent = `S${i + 1} simulated target: ${m.dataset.name}. No real imagery is available.`;
+    tip.textContent = `Simulated Science Site · S${i + 1}: ${m.dataset.name}. This is an independent simulated science site. STP1 is the shared simulated task destination for the three preset routes. No real imagery is available.`;
   };
   m.onkeydown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -679,14 +691,14 @@ $('mapWrap').onclick = (e) => {
     movingNote.updatedAt = new Date().toISOString();
     movingNote = null;
     state.notePosition = null;
-    $('noteStatus').textContent = 'Marker moved and saved.';
+    $('noteStatus').textContent = 'Note moved and saved. Select its map marker to view it.';
   } else state.notePosition = selectedPosition;
   pickingNote = false;
   $('mapWrap').classList.remove('picking-note');
   renderNoteTools();
   if (state.notePosition) {
     openSidebarSection($('environment').closest('.sidebar-section'));
-    $('mapNoteMode').textContent = 'Point selected · Write in Field Notes';
+    $('mapNoteMode').textContent = 'Location selected. Enter an environment note.';
     $('environment').focus({ preventScroll: true });
   }
   save();
@@ -704,8 +716,8 @@ $('mapSvg').append(noteLayer);
 function renderNotePosition() {
   const p = state.notePosition;
   $('notePosition').textContent = p
-    ? `Selected map point (${p.x.toFixed(0)}, ${p.y.toFixed(0)}) · schematic coordinates, not geographic coordinates`
-    : 'Select any map point, then write and save a field note.';
+    ? `Location selected. Enter an environment note. (${p.x.toFixed(0)}, ${p.y.toFixed(0)}) · Schematic Map Coordinates, not geographic coordinates`
+    : 'Choose a map location, then write and save an environment note.';
   renderMapNotes();
 }
 function renderMapNotes() {
@@ -727,13 +739,13 @@ function renderMapNotes() {
     if (savedNote) {
       marker.setAttribute('role', 'button');
       marker.setAttribute('tabindex', '0');
-      marker.setAttribute('aria-label', `Open field note ${label}`);
+      marker.setAttribute('aria-label', `Open Environment Note · ${label}`);
       const open = () => {
         if (!state.layers.notes || pickingNote || drawingCustom) return;
         selectedNote = savedNote;
-        $('fieldNoteTitle').textContent = `Field note ${label}`;
+        $('fieldNoteTitle').textContent = `Environment Note · ${label}`;
         $('fieldNoteMeta').textContent =
-          `${new Date(savedNote.time).toLocaleString('en-GB')} · Map point (${position.x.toFixed(0)}, ${position.y.toFixed(0)}) · Schematic coordinates`;
+          `${new Date(savedNote.time).toLocaleString('en-GB')} · Map point (${position.x.toFixed(0)}, ${position.y.toFixed(0)}) · Schematic Map Coordinates`;
         $('fieldNoteContent').textContent = savedNote.content;
         $('editFieldNote').value = savedNote.editDraft ?? savedNote.content;
         $('fieldNoteFeedback').textContent = '';
@@ -763,8 +775,8 @@ function renderNoteTools() {
   $('cancelNotePosition').textContent = movingNote ? 'Cancel moving' : 'Cancel adding';
   $('mapNoteMode').textContent = pickingNote
     ? movingNote
-      ? 'Click a new location'
-      : 'Click the map to place a note'
+      ? 'Choose a new location for this note.'
+      : 'Choose Location · Select a location on the map.'
     : 'Browse map';
 }
 $('pickNotePosition').onclick = () => {
@@ -779,7 +791,7 @@ $('pickNotePosition').onclick = () => {
   render();
   renderNoteTools();
   $('mapWrap').classList.add('picking-note');
-  $('notePosition').textContent = 'Click anywhere on the map to choose a point.';
+  $('notePosition').textContent = 'Choose Location · Select a location on the map.';
   $('mapWrap').scrollIntoView({ block: 'center', behavior: 'instant' });
 };
 $('cancelNotePosition').onclick = () => {
@@ -799,14 +811,14 @@ $('editFieldNote').oninput = () => {
 $('updateFieldNote').onclick = () => {
   const content = $('editFieldNote').value.trim();
   if (!selectedNote || !content) {
-    $('fieldNoteFeedback').textContent = 'Enter an observation before saving.';
+    $('fieldNoteFeedback').textContent = 'Enter a note before saving.';
     return;
   }
   selectedNote.content = content;
   delete selectedNote.editDraft;
   selectedNote.updatedAt = new Date().toISOString();
   $('fieldNoteContent').textContent = content;
-  $('fieldNoteFeedback').textContent = 'Changes saved.';
+  $('fieldNoteFeedback').textContent = 'Note saved. Select its map marker to view it.';
   save();
 };
 $('moveFieldNote').onclick = () => {
@@ -822,7 +834,7 @@ $('moveFieldNote').onclick = () => {
   renderNoteTools();
   $('fieldNoteDialog').close();
   $('mapWrap').classList.add('picking-note');
-  $('notePosition').textContent = 'Moving marker: click its new position on the map.';
+  $('notePosition').textContent = 'Move Note · Choose a new location on the map.';
   $('mapWrap').scrollIntoView({ block: 'center' });
 };
 $('deleteFieldNote').onclick = () => {
@@ -834,7 +846,7 @@ $('deleteFieldNote').onclick = () => {
   renderNotePosition();
   render();
   $('noteStatus').textContent =
-    'Marker deleted. Historical mission log entries are retained.';
+    'Note deleted. Historical journey log entries are retained.';
 };
 let zoom = 1;
 let panX = 0;
@@ -1003,20 +1015,20 @@ function updateCurrentObjective() {
   const total = custom ? state.customPoints.filter((point) => point.hasTask).length : 1;
   const completed = custom
     ? state.customCompleted.length
-    : Number(observationState('P1').done);
+    : Number(state.stp1Done);
   const observationCount = Object.values(state.nodeObservations).filter(
     (node) => node.done,
   ).length;
   const pos = getSimulatedPosition();
   $('activePosition').textContent =
-    `${routes[state.route].name} · ${$('duration').textContent} · X ${pos.x.toFixed(0)}, Y ${pos.y.toFixed(0)} (SIM) · Route tasks ${completed}/${total} · Observations ${observationCount}/3 complete`;
+    `${routes[state.route].name} · ${$('duration').textContent} · X ${pos.x.toFixed(0)}, Y ${pos.y.toFixed(0)} (SIM) · Route tasks ${completed}/${total} · Observations ${observationCount}/3 Completed`;
   $('deltaTaskStatus').textContent =
-    `P1 · ${observationState('P1').done ? 'Complete' : 'Not completed'} · View details`;
+    `STP1 · ${state.stp1Done ? 'Completed' : 'Not Completed'} · P1 reference imagery`;
   const extraDone = state.records
     .slice(state.journeyStart)
     .some((r) => r.kind === 'environment');
   $('extraTaskStatus').textContent = state.extra
-    ? `Optional task · ${extraDone ? 'Complete' : 'Not completed'}`
+    ? `Optional task · ${extraDone ? 'Completed' : 'Not Completed'}`
     : 'Choose any map point · Available at any stage';
   $('quickPause').hidden = !active();
   $('quickPause').textContent = $('pause').textContent;
@@ -1031,7 +1043,8 @@ function renderCustomMission() {
   $('previewDelta').closest('details').hidden = false;
   $('mainTask').innerHTML = custom
     ? '<option>Optional waypoint tasks</option>'
-    : '<option value="delta">Identify the ancient delta</option>';
+    : '<option value="delta">STP1 · Study Delta Reference Images</option>';
+  $('mainTaskName').textContent = $('mainTask').selectedOptions[0].textContent;
   $('complete').parentElement.hidden = custom;
   if (custom) {
     const pending = state.customPoints.findIndex(
@@ -1044,11 +1057,11 @@ function renderCustomMission() {
     $('pause').disabled =
       state.phase === 'outbound' && (state.progress === last() || pending >= 0);
     $('taskHelp').textContent =
-      'Enabled tasks pause on arrival. Complete a task and resume, or return now from any point. Unfinished task states are retained.';
+      'Enabled tasks pause on arrival. Complete a task and resume, or return to start from any point. Unfinished task states are retained.';
     if (state.phase === 'planning')
       $('objective').textContent = state.customConfirmed
-        ? 'Custom route confirmed. Ready to start.'
-        : 'Add and confirm your custom route before departure.';
+        ? 'Custom Route confirmed. Ready to start.'
+        : 'Add waypoints and confirm your Custom Route before departure.';
     else if (state.phase === 'outbound') {
       const next = state.customPoints.findIndex(
         (point, index) =>
@@ -1058,14 +1071,14 @@ function renderCustomMission() {
       );
       $('objective').textContent =
         pending >= 0
-          ? `Complete waypoint task: ${state.customPoints[pending].title}`
+          ? `Complete Task: ${state.customPoints[pending].title}`
           : next >= 0
-            ? `Next task: ${state.customPoints[next].title} (C${next + 1}). You may return now.`
+            ? `Next task: ${state.customPoints[next].title} (C${next + 1}). You may return to start.`
             : state.extra && !environmentTaskDone()
-              ? 'Optional task: record an environmental change, or return now.'
+              ? 'Optional task: Record the Surroundings, or return to start.'
               : state.progress === last()
                 ? 'Destination reached. Return when ready.'
-                : 'Continue to the destination or return now.';
+                : 'Continue to the destination or return to start.';
     } else if (state.phase === 'finished')
       $('objective').textContent =
         'Back at the starting point · Journey ended; task states retained.';
@@ -1087,7 +1100,7 @@ function renderCustomMarkers() {
     marker.setAttribute('transform', `translate(${point.x} ${point.y})`);
     marker.setAttribute('role', 'button');
     marker.setAttribute('tabindex', '0');
-    marker.setAttribute('aria-label', `Custom waypoint ${index + 1}`);
+    marker.setAttribute('aria-label', `Custom Route · Waypoint C${index + 1}`);
     const circle = document.createElementNS(svgNS, 'circle');
     circle.setAttribute('r', '23');
     circle.setAttribute(
@@ -1141,7 +1154,7 @@ function renderCustomTaskCards() {
   if (!tasks.length) {
     const p = document.createElement('p');
     p.className = 'muted';
-    p.textContent = 'No waypoint tasks set. You may travel without tasks.';
+    p.textContent = 'No tasks added to this route.';
     $('customTaskCards').append(p);
   }
   tasks.forEach((point) => {
@@ -1150,7 +1163,7 @@ function renderCustomTaskCards() {
     const strong = document.createElement('strong');
     strong.textContent = point.title;
     const small = document.createElement('small');
-    small.textContent = `C${point.index + 1}${point.name ? ' · ' + point.name : ''} · ${state.customCompleted.includes(point.index) ? 'Complete' : 'Not completed'}`;
+    small.textContent = `C${point.index + 1}${point.name ? ' · ' + point.name : ''} · ${state.customCompleted.includes(point.index) ? 'Completed' : 'Not Completed'}`;
     button.append(strong, small);
     button.onclick = () => openCustomTask(point.index);
     $('customTaskCards').append(button);
@@ -1169,9 +1182,9 @@ function openCustomTask(index) {
     : point.name || `Waypoint C${index + 1}`;
   $('customTaskDescription').textContent = point.hasTask
     ? point.description || 'No additional description.'
-    : 'No task is set at this point.';
+    : 'No task is set at this waypoint.';
   $('customTaskLocation').textContent =
-    `C${index + 1}${point.name ? ' · ' + point.name : ''} · X ${point.x}, Y ${point.y} · Schematic map units`;
+    `C${index + 1}${point.name ? ' · ' + point.name : ''} · X ${point.x}, Y ${point.y} · Schematic Map Coordinates (map units)`;
   const editable = state.phase === 'planning';
   $('pointEditForm').hidden = !editable;
   $('customTaskDescription').hidden = editable;
@@ -1193,9 +1206,9 @@ function openCustomTask(index) {
   $('customTaskStatus').textContent = !point.hasTask
     ? 'This waypoint has no task. The explorer passes through automatically.'
     : state.customCompleted.includes(index)
-      ? 'Task completed.'
+      ? 'Completed.'
       : state.phase === 'returning' || state.phase === 'finished'
-        ? 'Not completed. This status is retained after returning.'
+        ? 'Not Completed. This status is retained after returning.'
         : state.customReached.includes(index)
           ? 'Waypoint reached. Complete the task to continue.'
           : 'Preview available. Reach this waypoint during the journey to complete its task.';
@@ -1230,7 +1243,7 @@ function reachCustomWaypoint(index) {
   const point = state.customPoints[index];
   log(
     'arrival',
-    `Reached custom waypoint C${index + 1}${point.hasTask ? ': ' + point.title : ' (no task)'}`,
+    `Reached Custom Route waypoint C${index + 1}${point.hasTask ? ': ' + point.title : ' (no task)'}`,
   );
   if (point.hasTask && !state.customCompleted.includes(index)) {
     state.paused = true;
@@ -1244,7 +1257,7 @@ function resetWaypointForm() {
   editingWaypoint = null;
   $('waypointForm').reset();
   $('waypointTitle').required = false;
-  $('saveWaypoint').textContent = 'Add coordinate point';
+  $('saveWaypoint').textContent = 'Add Waypoint';
   $('cancelWaypointEdit').hidden = true;
 }
 function editCustomWaypoint(index) {
@@ -1258,7 +1271,7 @@ function editCustomWaypoint(index) {
   $('waypointTitle').value = point.title;
   $('waypointTitle').required = point.hasTask;
   $('waypointDescription').value = point.description;
-  $('saveWaypoint').textContent = 'Save waypoint changes';
+  $('saveWaypoint').textContent = 'Save Waypoint';
   $('cancelWaypointEdit').hidden = false;
 }
 function customRouteChanged() {
@@ -1344,7 +1357,7 @@ function renderCustomEditor() {
   });
   $('customRouteStatus').textContent = state.customConfirmed
     ? 'Route confirmed. Ready to start.'
-    : 'Unconfirmed route: add at least two distinct consecutive points, then confirm.';
+    : 'Unconfirmed Custom Route: add at least two distinct consecutive waypoints, then select Confirm Route.';
 }
 $('waypointHasTask').onchange = () => {
   $('waypointTitle').required = $('waypointHasTask').checked;
@@ -1421,7 +1434,7 @@ $('drawCustomRoute').onclick = () => {
   $('mapWrap').classList.add('drawing-custom');
   $('mapWrap').scrollIntoView({ block: 'center' });
   $('customRouteStatus').textContent =
-    'Click map points in travel order. Use Stop placing points when finished.';
+    'Place Waypoints on the map in travel order. Select Finish Placing when finished.';
 };
 $('stopCustomDrawing').onclick = () => {
   drawingCustom = false;
@@ -1440,7 +1453,7 @@ $('confirmCustomRoute').onclick = () => {
     )
   ) {
     $('customRouteStatus').textContent =
-      'Use at least two points. Consecutive points must differ; enabled tasks need titles.';
+      'Use at least two waypoints. Consecutive waypoints must differ; enabled tasks need titles.';
     return;
   }
   state.customConfirmed = true;
@@ -1448,7 +1461,7 @@ $('confirmCustomRoute').onclick = () => {
   $('mapWrap').classList.remove('drawing-custom');
   log(
     'route',
-    'Confirmed custom route: ' +
+    'Confirmed Custom Route: ' +
       pts
         .map((p, i) => `C${i + 1} (${p.x}, ${p.y})${p.hasTask ? ': ' + p.title : ''}`)
         .join(' → '),
@@ -1464,13 +1477,13 @@ $('exportLog').onclick = () => {
     .map((record, index) => ({ ...record, index }))
     .sort((a, b) => Date.parse(a.time) - Date.parse(b.time) || a.index - b.index);
   const content = [
-    'MarsPath Mission Log',
+    'MarsPath Journey Log',
     'Chronological order · All saved journeys',
-    'Coordinates are schematic map units, not meters or latitude/longitude.',
+    'Schematic Map Coordinates are in map units, not meters or latitude/longitude.',
     '',
     ...records.map(
       (r) =>
-        `${r.time} | ${routes[r.route]?.name || r.route} | ${r.phase} | (${r.position.x}, ${r.position.y})\nNode ${r.nodeId || '-'} | Task ${r.taskId || '-'} | Image ${r.imageId || '-'} | Image captured: ${r.capturedAt || 'not applicable'}\n${r.content}\n${r.evidence ? 'Evidence: ' + JSON.stringify(r.evidence) + '\n' : ''}`,
+        `${r.time} | ${routes[r.route]?.name || r.route} | ${r.phase} | (${r.position.x}, ${r.position.y})\nNode ${r.nodeId || '-'} | Task ${r.taskId || '-'} | Image ${r.imageId || '-'} | Image Captured: ${r.capturedAt || 'not applicable'}\n${r.content}\n${r.evidence ? 'Evidence: ' + JSON.stringify(r.evidence) + '\n' : ''}`,
     ),
   ].join('\r\n');
   const url = URL.createObjectURL(
@@ -1486,7 +1499,7 @@ $('exportLog').onclick = () => {
 };
 
 // One synthetic segment takes eight visible seconds. No physical scale is inferred.
-setInterval(() => {
+function advanceJourney() {
   if (
     !active() ||
     state.paused ||
@@ -1508,7 +1521,7 @@ setInterval(() => {
     state.paused = true;
     log(
       'arrival',
-      'Reached the planned route destination. P1 is a separate approximate camera-site node.',
+      'Reached STP1 (Simulated Task Point 1). Use P1 reference imagery captured at Octavia E. Butler Landing; it was not photographed at STP1.',
     );
   } else if (state.phase === 'returning' && state.progress === 0) {
     log('arrival', 'Returned to the simulated starting point. Round trip complete');
@@ -1517,7 +1530,8 @@ setInterval(() => {
   }
   save();
   render();
-}, 500);
+}
+setInterval(advanceJourney, 500);
 const {
   paintMark,
   refreshObservationControls,
@@ -1532,3 +1546,8 @@ renderLogs();
 paintMark();
 renderCustomEditor();
 save();
+
+$('stp1Marker').onclick = () => openPhoto(true);
+$('stp1Marker').onkeydown = (e) => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPhoto(true); }
+};

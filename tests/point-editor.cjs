@@ -34,7 +34,7 @@ const { pathToFileURL } = require('node:url');
       .first()
       .getByRole('button', { name: 'Edit', exact: true })
       .click();
-    await page.getByRole('button', { name: 'Custom waypoint 1', exact: true }).click();
+    await page.getByRole('button', { name: 'Custom Route · Waypoint C1', exact: true }).click();
     assert.equal(await page.locator('#pointName').inputValue(), 'Landing camp');
     await page.locator('#pointName').fill('Delta overlook');
     await page.locator('#pointX').fill('180');
@@ -45,7 +45,7 @@ const { pathToFileURL } = require('node:url');
       .locator('#pointDescription')
       .fill('Compare visible layering at the overlook.');
     await page.screenshot({ path: path.resolve(__dirname, 'point-editor.png') });
-    await page.getByRole('button', { name: 'Save point', exact: true }).click();
+    await page.locator('#pointEditForm').getByRole('button', { name: 'Save Waypoint', exact: true }).click();
     assert.equal(await page.locator('#customTaskDialog').isVisible(), false);
     assert.equal(await page.locator('#waypointName').inputValue(), 'Delta overlook');
     assert.equal(await page.locator('#waypointX').inputValue(), '180');
@@ -59,7 +59,7 @@ const { pathToFileURL } = require('node:url');
     );
     assert.equal(
       await page
-        .getByRole('button', { name: 'Custom waypoint 1', exact: true })
+        .getByRole('button', { name: 'Custom Route · Waypoint C1', exact: true })
         .getAttribute('transform'),
       'translate(180 220)',
     );
@@ -72,16 +72,16 @@ const { pathToFileURL } = require('node:url');
       /Inspect sediment layers/,
     );
     const snapshot = (await saved()).customPoints;
-    await page.getByRole('button', { name: 'Custom waypoint 1', exact: true }).click();
+    await page.getByRole('button', { name: 'Custom Route · Waypoint C1', exact: true }).click();
     await page.locator('#pointName').fill('Discard me');
     await page.locator('#pointX').fill('999');
     await page.locator('#cancelPointEdit').click();
     assert.deepEqual((await saved()).customPoints, snapshot);
     assert.equal(await page.locator('#waypointName').inputValue(), 'Delta overlook');
-    await page.getByRole('button', { name: 'Custom waypoint 1', exact: true }).click();
+    await page.getByRole('button', { name: 'Custom Route · Waypoint C1', exact: true }).click();
     assert.equal(await page.locator('#pointName').inputValue(), 'Delta overlook');
     await page.locator('#pointX').fill('1001');
-    await page.getByRole('button', { name: 'Save point', exact: true }).click();
+    await page.locator('#pointEditForm').getByRole('button', { name: 'Save Waypoint', exact: true }).click();
     assert.equal(
       await page.locator('#pointX').evaluate((e) => e.validity.rangeOverflow),
       true,
@@ -94,7 +94,7 @@ const { pathToFileURL } = require('node:url');
     await page.locator('#waypointTitle').fill('Revised task');
     await page.locator('#waypointDescription').fill('Updated task description');
     await page.locator('#saveWaypoint').click();
-    await page.getByRole('button', { name: 'Custom waypoint 1', exact: true }).click();
+    await page.getByRole('button', { name: 'Custom Route · Waypoint C1', exact: true }).click();
     assert.equal(await page.locator('#pointName').inputValue(), 'Updated from sidebar');
     assert.equal(await page.locator('#pointTitle').inputValue(), 'Revised task');
     assert.equal(
@@ -102,19 +102,19 @@ const { pathToFileURL } = require('node:url');
       'Updated task description',
     );
     await page.locator('#pointHasTask').uncheck();
-    await page.getByRole('button', { name: 'Save point', exact: true }).click();
+    await page.locator('#pointEditForm').getByRole('button', { name: 'Save Waypoint', exact: true }).click();
     assert.doesNotMatch(
       await page.locator('#customTaskCards').textContent(),
       /Revised task/,
     );
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.getByRole('button', { name: 'Custom waypoint 1', exact: true }).click();
+    await page.getByRole('button', { name: 'Custom Route · Waypoint C1', exact: true }).click();
     assert.equal(await page.locator('#pointName').inputValue(), 'Updated from sidebar');
     assert.equal(await page.locator('#pointHasTask').isChecked(), false);
     await page.locator('#closeCustomTask').click();
     await openSidebar();
     await page.locator('#confirmCustomRoute').click();
-    await page.getByRole('button', { name: 'Custom waypoint 1', exact: true }).click();
+    await page.getByRole('button', { name: 'Custom Route · Waypoint C1', exact: true }).click();
     await page.locator('#pointName').fill('No commit');
     await page.locator('#cancelPointEdit').click();
     assert.equal((await saved()).customConfirmed, true);

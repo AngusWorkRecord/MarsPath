@@ -785,3 +785,8 @@ dialog .muted {
 
 .sidebar-help > summary { cursor: pointer; min-height: 44px; padding: 12px 0; color: #b9d0dc; font-size: 12px; }
 .sidebar-help p { padding-bottom: 8px; }
+
+/* Keep the full selected task readable when a native select clips its text. */
+#mainTaskName { margin-top: 8px; overflow-wrap: anywhere; }
+#markerMode { font-size: 12px; }
+.toggle .dot { flex-shrink: 0; }
