@@ -130,7 +130,7 @@ const { pathToFileURL } = require('node:url');
     // Task cards reveal only their own layer and retain unfinished input and mark.
     await all(false);
     await overview();
-    await page.locator('#previewDelta').click();
+    await page.locator('.task-overview [data-observation-node="P1"]').click();
     assert.equal((await state()).layers.imagery, true);
     assert.equal((await state()).layers.deltaFront, false);
     assert.equal(await page.locator('#photoMarker').getAttribute('aria-pressed'), 'true');
@@ -141,7 +141,7 @@ const { pathToFileURL } = require('node:url');
     await page.locator('#photoLayerControl').uncheck();
     assert.equal(await page.locator('#photoDialog').isVisible(), false);
     assert.equal(await page.locator('#photoMarker').isVisible(), false);
-    await page.locator('#previewDelta').click();
+    await page.locator('.task-overview [data-observation-node="P1"]').click();
     assert.equal(await page.locator('#observation').inputValue(), 'Unsubmitted P1 draft');
     assert.deepEqual((await state()).nodeObservations.P1.images.PIA24485.mark, mark);
     assert.equal(

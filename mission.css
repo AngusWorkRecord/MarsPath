@@ -790,3 +790,8 @@ dialog .muted {
 #mainTaskName { margin-top: 8px; overflow-wrap: anywhere; }
 #markerMode { font-size: 12px; }
 .toggle .dot { flex-shrink: 0; }
+
+.stp1-details h3 { font-size: 15px; line-height: 1.6; margin: 10px 0; }
+.stp1-details p { font-size: 12px; line-height: 1.7; margin: 10px 0; }
+#stp1TaskDetails { background: #192d3a; border: 1px solid #486174; border-radius: 6px; padding: 10px; }
+#stp1Dialog { width: min(640px, 95vw); }

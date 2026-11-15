@@ -93,12 +93,12 @@ function createObservationViewer() {
   }
   function canConfirmNode(nodeId) {
     if (!observationEvidence(nodeId)) return false;
-    return nodeId !== 'P1' || (state.phase === 'outbound' && (state.route === 'custom' ? near() : atSTP1()));
+    return nodeId !== 'P1' || (state.phase === 'outbound' && near());
   }
   function refreshObservationControls() {
     const node = observationState(currentObservationNode);
     $('saveObservation').disabled = false;
-    $('confirmObservation').checked = currentObservationNode === 'P1' && state.route !== 'custom' ? state.stp1Done : node.done;
+    $('confirmObservation').checked = node.done;
     $('confirmObservation').disabled = !canConfirmNode(currentObservationNode);
     $('skinnerTaskStatus').textContent =
       `${observationState('N2').done ? 'Completed' : 'Not Completed'} · Regional materials · Preview anytime`;
@@ -176,9 +176,7 @@ function createObservationViewer() {
     paintReferences();
     $('observationStatus').textContent =
       node.id === 'P1' && !canConfirmNode('P1')
-        ? state.route === 'custom'
-          ? 'Preview and draft saving are available now. To complete the P1 observation task, save a marked observation and reach the simulated P1 range during an outbound journey. The range is simulated only; exact camera pose and map registration remain unverified.'
-          : 'Preview and draft saving are available now. To complete STP1, save a marked P1 reference observation and reach STP1 during an outbound journey. P1 was photographed at Octavia E. Butler Landing, not STP1.'
+        ? 'Preview and draft saving are available now. To complete the P1 observation task, save a marked observation and reach the simulated P1 range during an outbound journey. The range is simulated only; exact camera pose and map registration remain unverified.'
         : 'Each location and image keeps its own draft and saved evidence. Save your observation, then confirm the task yourself.';
     paintMark();
     refreshObservationControls();
@@ -208,9 +206,7 @@ function createObservationViewer() {
     $('showReferences').checked = false;
     $('observationNodeId').textContent = 'Observation';
     $('photoTitle').textContent = node.name;
-    $('observationTaskPrompt').textContent = nodeId === 'P1' && state.route !== 'custom'
-      ? 'STP1 · Study Delta Reference Images. STP1 is a simulated task location shared by the three preset routes. Use this real reference image captured at P1 to study the delta. Camera: Octavia E. Butler Landing; target: delta remnant about 2.3 km west. This image was not taken at STP1.'
-      : `${node.task}. ${node.instructions}`;
+    $('observationTaskPrompt').textContent = `${node.task}. ${node.instructions}`;
     $('photoLayerControl').dataset.layerControl =
       nodeId === 'P1' ? 'imagery' : 'deltaFront';
     $('photoLayerControlLabel').textContent =
@@ -354,17 +350,15 @@ function createObservationViewer() {
   function setNodeCompletion(nodeId, checked) {
     if (checked && !canConfirmNode(nodeId)) return;
     const node = observationState(nodeId);
-    if (nodeId === 'P1' && state.route !== 'custom') state.stp1Done = checked;
     node.done = checked;
     node.completedAt = checked ? new Date().toISOString() : null;
     const evidence = observationEvidence(nodeId);
     const imageId = evidence?.imageId || OBSERVATION_DATA.nodes[nodeId].defaultImageId;
     log(
       'task',
-      `${checked ? 'Completed' : 'Not Completed'}: ${nodeId === 'P1' && state.route !== 'custom' ? 'STP1 · Study Delta Reference Images, using P1 reference imagery from Octavia E. Butler Landing' : OBSERVATION_DATA.nodes[nodeId].task}`,
+      `${checked ? 'Completed' : 'Not Completed'}: ${OBSERVATION_DATA.nodes[nodeId].task}`,
       getSimulatedPosition(),
-      { ...observationLogMetadata(nodeId, imageId, evidence),
-        taskId: nodeId === 'P1' && state.route !== 'custom' ? 'T-STP1' : node.taskId },
+      observationLogMetadata(nodeId, imageId, evidence),
     );
     render();
   }

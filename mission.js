@@ -1,6 +1,6 @@
 'use strict';
 const SIM_BASE = [250, 580];
-const STP1 = { x: 690, y: 480, name: 'Simulated Task Point 1' };
+const STP1 = { x: 690, y: 480, name: 'STP1 · Simulated Task Point' };
 const routes = {
   custom: { name: 'Custom Route', risk: null, stops: 0, points: '' },
   balanced: {
@@ -242,6 +242,16 @@ function atSTP1() {
   const pos = getSimulatedPosition();
   return state.route !== 'custom' && Math.hypot(pos.x - STP1.x, pos.y - STP1.y) < 0.001;
 }
+function canCompleteSTP1() {
+  return state.phase === 'outbound' && atSTP1();
+}
+function setSTP1Completion(checked) {
+  if (!canCompleteSTP1()) return;
+  state.stp1Done = checked;
+  log('task', `${checked ? 'Completed' : 'Not Completed'}: ${STP1.name} · SIMULATED · Demo Only`,
+    getSimulatedPosition(), { taskId: 'T-STP1' });
+  render();
+}
 function near() {
   return isPhotoNearby(photoLocations.find((photo) => photo.id === 'P1'));
 }
@@ -463,7 +473,13 @@ function render() {
   $('return').hidden = state.phase !== 'outbound';
   $('return').disabled = state.phase !== 'outbound';
   $('complete').checked = state.stp1Done;
-  $('complete').disabled = !canConfirmNode('P1');
+  $('complete').disabled = !canCompleteSTP1();
+  $('completeStp1').disabled = !canCompleteSTP1() || state.stp1Done;
+  $('stp1Status').textContent = state.stp1Done
+    ? 'Completed · SIMULATED · Demo Only'
+    : canCompleteSTP1()
+      ? 'Not Completed · STP1 reached. Confirm completion of the simulated task.'
+      : 'Not Completed · Reach STP1 using a preset route to complete this simulated task.';
   $('objective').textContent = planning
     ? 'Confirm your route and tasks, then start the journey'
     : state.phase === 'finished'
@@ -475,12 +491,12 @@ function render() {
             ? 'Optional task: Record the Surroundings, or return to start.'
             : 'STP1 · Completed. Return to the simulated base when ready.'
           : atSTP1()
-            ? 'STP1 reached. Open the task, use P1 reference imagery and save an observation.'
-            : 'Travel to STP1 (Simulated Task Point 1), or return at any time.';
+            ? 'STP1 reached. Confirm completion of the simulated task.'
+            : 'Travel to STP1 (Simulated Task Point), or return at any time.';
   $('position').textContent = positionText();
   $('taskHelp').textContent = state.stp1Done
-    ? 'STP1 · Completed. P1 imagery was captured at Octavia E. Butler Landing, not STP1.'
-    : 'Reach STP1, open its task and use P1 reference imagery to mark a feature and save notes. Confirm completion at STP1. P1 is the actual image entry, not this simulated destination.';
+    ? 'STP1 · Completed · SIMULATED · Demo Only. This task is not linked to real observation data.'
+    : 'Reach STP1 using a preset route, then confirm completion of the simulated task.';
   $('markerMode').value = state.mode;
   $('markerMode').disabled = false;
   renderLayers();
@@ -569,7 +585,7 @@ $('start').onclick = () => {
     'start',
     (state.route === 'custom'
       ? 'Journey started: Custom Route'
-      : `Journey started: ${routes[state.route].name} · STP1 · Study Delta Reference Images. STP1 is a simulated task location; reference photos were taken at P1 (Octavia E. Butler Landing)`) +
+      : `Journey started: ${routes[state.route].name} · ${STP1.name} · SIMULATED · Demo Only. This task is not linked to real observation data.`) +
       (state.extra ? '; optional task: Record the Surroundings' : ''),
   );
   render();
@@ -620,7 +636,7 @@ $('return').onclick = () => {
   );
   render();
 };
-$('complete').onchange = (e) => setNodeCompletion('P1', e.target.checked);
+$('complete').onchange = (e) => setSTP1Completion(e.target.checked);
 $('environment').value = state.environment;
 $('environment').oninput = (e) => {
   state.environment = e.target.value;
@@ -987,7 +1003,21 @@ viewport.addEventListener(
 );
 viewport.addEventListener('dragstart', (e) => e.preventDefault());
 new ResizeObserver(applyMapView).observe(viewport);
-$('previewDelta').onclick = () => openPhoto(true);
+// Both entry points display clones of this single, authored description.
+for (const id of ['stp1TaskDetails', 'stp1DialogDetails'])
+  $(id).append($('stp1DetailsTemplate').content.cloneNode(true));
+function openSTP1() {
+  if (pickingNote || drawingCustom) return;
+  if (active() && !state.paused) {
+    state.paused = true;
+    log('control', `Journey paused to view ${STP1.name} · SIMULATED · Demo Only`);
+  }
+  render();
+  if (!$('stp1Dialog').open) $('stp1Dialog').showModal();
+}
+$('previewDelta').onclick = openSTP1;
+$('closeStp1').onclick = () => $('stp1Dialog').close();
+$('completeStp1').onclick = () => setSTP1Completion(true);
 $('previewEnvironment').onclick = () => {
   ensureLayer('notes');
   $('environmentTaskDialog').showModal();
@@ -1023,7 +1053,7 @@ function updateCurrentObjective() {
   $('activePosition').textContent =
     `${routes[state.route].name} · ${$('duration').textContent} · X ${pos.x.toFixed(0)}, Y ${pos.y.toFixed(0)} (SIM) · Route tasks ${completed}/${total} · Observations ${observationCount}/3 Completed`;
   $('deltaTaskStatus').textContent =
-    `STP1 · ${state.stp1Done ? 'Completed' : 'Not Completed'} · P1 reference imagery`;
+    `STP1 · ${state.stp1Done ? 'Completed' : 'Not Completed'} · SIMULATED · Demo Only`;
   const extraDone = state.records
     .slice(state.journeyStart)
     .some((r) => r.kind === 'environment');
@@ -1043,7 +1073,7 @@ function renderCustomMission() {
   $('previewDelta').closest('details').hidden = false;
   $('mainTask').innerHTML = custom
     ? '<option>Optional waypoint tasks</option>'
-    : '<option value="delta">STP1 · Study Delta Reference Images</option>';
+    : '<option value="delta">STP1 · Simulated Task Point</option>';
   $('mainTaskName').textContent = $('mainTask').selectedOptions[0].textContent;
   $('complete').parentElement.hidden = custom;
   if (custom) {
@@ -1508,7 +1538,8 @@ function advanceJourney() {
     $('fieldNoteDialog').open ||
     $('customTaskDialog').open ||
     $('environmentTaskDialog').open ||
-    $('regionDialog').open
+    $('regionDialog').open ||
+    $('stp1Dialog').open
   )
     return;
   state.progress = Math.max(
@@ -1521,7 +1552,7 @@ function advanceJourney() {
     state.paused = true;
     log(
       'arrival',
-      'Reached STP1 (Simulated Task Point 1). Use P1 reference imagery captured at Octavia E. Butler Landing; it was not photographed at STP1.',
+      'Reached STP1 · Simulated Task Point. Confirm completion of the simulated task. SIMULATED · Demo Only; not linked to real observation data.',
     );
   } else if (state.phase === 'returning' && state.progress === 0) {
     log('arrival', 'Returned to the simulated starting point. Round trip complete');
@@ -1547,7 +1578,7 @@ paintMark();
 renderCustomEditor();
 save();
 
-$('stp1Marker').onclick = () => openPhoto(true);
+$('stp1Marker').onclick = openSTP1;
 $('stp1Marker').onkeydown = (e) => {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPhoto(true); }
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSTP1(); }
 };

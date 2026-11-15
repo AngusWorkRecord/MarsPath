@@ -264,8 +264,8 @@
                         <circle r="22" />
                         <text y="5">⌂</text>
                       </g>
-                      <g id="stp1Marker" class="marker" transform="translate(690 480)" role="button" tabindex="0" aria-label="STP1 · Study Delta Reference Images, simulated task location; open P1 reference imagery">
-                        <title>STP1 — Simulated Task Point 1. Conceptual task location; reference photos were taken at P1, not here.</title>
+                      <g id="stp1Marker" class="marker" transform="translate(690 480)" role="button" tabindex="0" aria-label="STP1 · Simulated Task Point, open demo task details">
+                        <title>STP1 · Simulated Task Point. SIMULATED · Demo Only.</title>
                         <circle r="17" fill="#ed9f72" stroke="#fff0db" stroke-width="3" />
                         <rect x="-38" y="22" width="76" height="30" rx="5" class="map-label-backplate" />
                         <text y="44" style="font-size:19px">STP1</text>
@@ -409,12 +409,20 @@
                 <summary>Tasks</summary>
                 <div class="panel-body">
                   <details open>
-                    <summary>Geology</summary>
+                    <summary>Simulated Task</summary>
+                    <div id="stp1TaskDetails" class="stp1-details"></div>
                     <button class="task-card" id="previewDelta">
-                      <strong>STP1 · Study Delta Reference Images</strong
+                      <strong>View STP1 Details</strong
                       ><small id="deltaTaskStatus"
-                        >STP1 · Not Completed · P1 reference imagery</small
+                        >STP1 · Not Completed · SIMULATED · Demo Only</small
                       >
+                    </button>
+                  </details>
+                  <details open>
+                    <summary>Geology</summary>
+                    <button class="task-card" data-observation-node="P1">
+                      <strong>P1 · Delta View from the Landing Site</strong>
+                      <small>Real imagery · Observation</small>
                     </button>
                   </details>
                   <details open>
@@ -540,9 +548,9 @@
                   </details>
                   <label for="mainTask">Main Task</label
                   ><select id="mainTask" aria-describedby="mainTaskName">
-                    <option value="delta">STP1 · Study Delta Reference Images</option>
+                    <option value="delta">STP1 · Simulated Task Point</option>
                   </select>
-                  <p id="mainTaskName" class="muted">STP1 · Study Delta Reference Images</p>
+                  <p id="mainTaskName" class="muted">STP1 · Simulated Task Point</p>
                   <label class="check"
                     ><input type="checkbox" id="extraTask" />Optional task: Record the Surroundings</label
                   >
@@ -552,7 +560,7 @@
                     ><span id="position"></span>
                   </div>
                   <div class="actions">
-                    <button id="start" class="primary">Start Journey</button
+                    <button id="start" class="primary" title="Requires a confirmed custom route when Custom Route is selected.">Start Journey</button
                     ><button id="pause" hidden>Pause</button
                     ><button id="return" hidden>Return to Start</button>
                     <button id="newJourney" class="primary" hidden>
@@ -563,8 +571,7 @@
                     ><input type="checkbox" id="complete" disabled />Mark Task as Completed</label
                   >
                   <p id="taskHelp" class="muted">
-                    At STP1, use P1 reference imagery, mark the feature and save your notes, then check the box to
-                    complete the task.
+                    Reach STP1 using a preset route, then confirm completion of the simulated task.
                   </p>
                   <p id="persistStatus" class="muted" role="status">
                     Automatically saved in this browser
@@ -610,6 +617,21 @@
         </section>
       </main>
     </div>
+    <template id="stp1DetailsTemplate">
+      <h3>STP1 · Simulated Task Point</h3>
+      <p class="eyebrow accent">SIMULATED · Demo Only</p>
+      <p class="muted">This temporary task point is the shared destination for the three preset simulated routes. It demonstrates route selection, arrival, and task completion. The point and task are for demonstration only and are not linked to real observation data. The routes are simulated and have not been verified for real-world traversal.</p>
+      <p><strong>Task Objective</strong></p>
+      <p class="muted">Reach STP1 using a preset route, then confirm completion of the simulated task.</p>
+    </template>
+    <dialog id="stp1Dialog" aria-label="STP1 · Simulated Task Point">
+      <div class="dialog-head">
+        <div id="stp1DialogDetails" class="stp1-details"></div>
+        <button id="closeStp1">Close</button>
+      </div>
+      <p id="stp1Status" role="status"></p>
+      <button id="completeStp1" class="primary" title="Available after arriving at the task point.">Complete Task</button>
+    </dialog>
     <dialog id="photoDialog" aria-labelledby="photoTitle">
       <div class="observation-header">
         <div class="dialog-head">

@@ -43,10 +43,31 @@ const url = pathToFileURL(path.resolve(__dirname, '../mission.html')).href;
     assert.ok((await text('#nearbySummary')).startsWith('Show When Nearby · SIM'));
     await page.locator('#markerMode').selectOption('all');
     assert.ok((await text('#nearbySummary')).startsWith('Always Show'));
+    const expectedSTP1 = [
+      'STP1 · Simulated Task Point',
+      'SIMULATED · Demo Only',
+      'This temporary task point is the shared destination for the three preset simulated routes. It demonstrates route selection, arrival, and task completion. The point and task are for demonstration only and are not linked to real observation data. The routes are simulated and have not been verified for real-world traversal.',
+      'Task Objective',
+      'Reach STP1 using a preset route, then confirm completion of the simulated task.',
+    ];
+    const details = selector => page.locator(selector).locator('h3, p').allTextContents();
+    assert.deepEqual(await details('#stp1TaskDetails'), expectedSTP1);
     await page.locator('#previewDelta').click();
+    assert.deepEqual(await details('#stp1DialogDetails'), expectedSTP1);
+    assert.equal(await page.locator('#completeStp1').isEnabled(), false);
+    assert.equal(await page.locator('#photoDialog').isVisible(), false);
+    await page.locator('#closeStp1').click();
+    await page.locator('#stp1Marker').click();
+    assert.deepEqual(await details('#stp1DialogDetails'), expectedSTP1);
+    await page.locator('#closeStp1').click();
+    await page.locator('#stp1Marker').press('Enter');
+    assert.equal(await page.locator('#stp1Dialog').isVisible(), true);
+    await page.locator('#stp1Dialog').press('Escape');
+    passed.push('Tasks, map click and keyboard open the same exact STP1 description; completion blocked before arrival');
+    await page.locator('.task-overview [data-observation-node="P1"]').click();
     assert.equal(await text('#photoTitle'), 'P1 · Delta View from the Landing Site');
     assert.equal(await text('#photoLayerControlLabel'), 'P1 · Landing-site Imagery');
-    assert.ok((await text('#observationTaskPrompt')).includes('captured at P1'));
+    assert.ok(!(await text('#observationTaskPrompt')).includes('STP1'));
     assert.ok((await text('#photoMetadata')).includes('Image Captured'));
     assert.ok((await text('#landingContext')).includes('Exact camera pose and'));
     assert.equal(await page.locator('#confirmObservation').isEnabled(), false);
@@ -102,6 +123,26 @@ const url = pathToFileURL(path.resolve(__dirname, '../mission.html')).href;
     await page.locator('#deleteFieldNote').click();
     assert.equal(await text('#noteStatus'), 'Note deleted. Historical journey log entries are retained.');
     await check('Deleting a note preserves historical log content', () => !state.mapNotes.length && state.records.some(r => r.content === 'Terrain note · 历史用户原文'));
+    await reset();
+    await page.locator('[data-route="shortest"]').click();
+    await controls(); await page.locator('#start').click();
+    await page.clock.runFor(8000);
+    await overview(); await page.locator('.task-overview [data-observation-node="P1"]').click();
+    await check('Real P1 observation still requires its own saved evidence', () => near() && !canConfirmNode('P1') && !state.stp1Done);
+    await page.locator('#observationPhoto').evaluate(i => i.decode());
+    await page.locator('#photoCanvas').press('Enter');
+    await page.locator('#observation').fill('Visible delta remnant in the landing-site image.');
+    await page.locator('#saveObservation').click();
+    await page.locator('#confirmObservation').check();
+    await check('Real P1 completion does not complete STP1', () => observationState('P1').done && !state.stp1Done);
+    const savedP1 = await page.evaluate(() => JSON.stringify(state.nodeObservations.P1));
+    await page.locator('#closePhoto').click();
+    await controls(); await page.locator('#pause').click(); await page.clock.runFor(40000);
+    await overview(); await page.locator('#previewDelta').click();
+    await page.locator('#completeStp1').click();
+    assert.equal(await page.evaluate(() => JSON.stringify(state.nodeObservations.P1)), savedP1);
+    passed.push('STP1 completion preserves existing real P1 observation evidence and completion');
+    await page.locator('#closeStp1').click();
     // All preset journeys run using the actual timer, accelerated by Playwright's clock.
     for (const route of ['balanced', 'shortest', 'science']) {
       await reset();
@@ -113,13 +154,14 @@ const url = pathToFileURL(path.resolve(__dirname, '../mission.html')).href;
       await controls();
       await page.locator('#pause').click();
       await page.clock.runFor(50000);
-      await check(`${route}: arrived at STP1; task blocked without evidence`, () => atSTP1() && state.paused && !canConfirmNode('P1'));
+      await check(`${route}: arrived at STP1; demo completion needs no observation evidence`, () => atSTP1() && state.paused && canCompleteSTP1() && !observationEvidence('P1'));
+      const observationsBefore = await page.evaluate(() => JSON.stringify(state.nodeObservations));
       await overview(); await page.locator('#previewDelta').click();
-      await page.locator('#observationPhoto').evaluate(i => i.decode());
-      await page.locator('#photoCanvas').press('Enter');
-      await page.locator('#observation').fill('Raised delta layers in the reference image.');
-      await page.locator('#saveObservation').click(); await page.locator('#confirmObservation').check();
-      await page.locator('#closePhoto').click();
+      assert.deepEqual(await details('#stp1DialogDetails'), expectedSTP1);
+      await page.locator('#completeStp1').click();
+      assert.equal(await page.evaluate(() => JSON.stringify(state.nodeObservations)), observationsBefore);
+      await check(`${route}: simulated completion log has no real image or evidence`, () => state.records.some(r => r.taskId === 'T-STP1' && r.kind === 'task' && r.nodeId === null && r.imageId === null && !r.evidence));
+      await page.locator('#closeStp1').click();
       await page.reload({ waitUntil: 'load' });
       await check(`${route}: STP1 completion restored`, () => state.stp1Done && atSTP1() && $('deltaTaskStatus').textContent.includes('Completed'));
       await controls(); await page.locator('#return').click();
@@ -130,6 +172,11 @@ const url = pathToFileURL(path.resolve(__dirname, '../mission.html')).href;
     }
     // Custom route editor, task count, completion and storage restore.
     await reset(); await page.locator('[data-route="custom"]').click();
+    await page.evaluate(() => openSidebarSection(document.querySelector('.task-overview')));
+    await page.locator('#previewDelta').click();
+    assert.equal(await page.locator('#completeStp1').isEnabled(), false);
+    await page.locator('#closeStp1').click(); await controls();
+    await check('Custom Route cannot complete STP1', () => !canCompleteSTP1() && !state.stp1Done);
     assert.equal(await text('#stopsLabel'), 'Tasks');
     assert.equal(await text('#stops'), '0 tasks');
     assert.equal(await text('#customTaskCards'), 'No tasks added to this route.');
@@ -174,7 +221,7 @@ const url = pathToFileURL(path.resolve(__dirname, '../mission.html')).href;
       for (const id of ['previewDelta', 'openRegion', 'previewEnvironment']) {
         await overview(); await page.locator('#' + id).click();
         await check(`${width}: ${id} dialog fits`, () => { const d = document.querySelector('dialog[open]'); return d.scrollWidth <= d.clientWidth + 1; });
-        if (out && width === 1440 && id === 'previewDelta') await page.screenshot({ path: path.join(out, 'p1.png') });
+        if (out && width === 1440 && id === 'previewDelta') await page.screenshot({ path: path.join(out, 'stp1.png') });
         await page.locator('dialog[open]').press('Escape');
       }
       await page.locator('[data-route="custom"]').click();
