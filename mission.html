@@ -26,43 +26,55 @@
         <div class="side-section">
           <span class="eyebrow">MAP LAYERS</span>
           <label class="toggle"
-            ><span><b class="dot sand"></b> Orbital terrain</span
+            ><span><b class="dot sand"></b> Regional basemap</span
             ><input type="checkbox" id="terrain" checked /><i></i
+          ></label>
+          <label class="toggle"
+            ><span><b class="dot sand"></b> Landing-site imagery · P1</span
+            ><input id="imagery" type="checkbox" checked /><i></i
+          ></label>
+          <label class="toggle"
+            ><span><b class="dot teal"></b> Delta-front observation area</span
+            ><input id="deltaFront" type="checkbox" checked /><i></i
           ></label>
           <label class="toggle"
             ><span><b class="dot red"></b> Hazard zones <em>SIM</em></span
             ><input type="checkbox" id="hazards" checked /><i></i
           ></label>
           <label class="toggle"
-            ><span><b class="dot teal"></b> Simulated targets S1–S3 <em>SIM</em></span
+            ><span><b class="dot teal"></b> Simulated sites S1–S3 <em>SIM</em></span
             ><input type="checkbox" id="science" checked /><i></i
           ></label>
           <label class="toggle"
-            ><span><b class="dot blue"></b> Traverse route <em>SIM</em></span
+            ><span><b class="dot blue"></b> Preset route <em>SIM</em></span
             ><input type="checkbox" id="route" checked /><i></i
           ></label>
           <label class="toggle">
-            <span><b class="dot teal"></b> Custom Map Layer</span>
+            <span
+              ><b class="dot teal"></b> Custom route &amp; waypoints <em>SIM</em></span
+            >
             <input type="checkbox" id="customMap" /><i></i>
           </label>
           <label class="toggle">
             <span><b class="dot blue"></b> Environmental records</span>
             <input type="checkbox" id="notes" checked /><i></i>
           </label>
+          <p class="muted layer-help">
+            Preset: line + origin. Custom: line + C waypoints and tasks. S1–S3 are
+            separate simulated sites. The explorer always shows your simulated position.
+          </p>
         </div>
         <div class="side-section">
-          <span class="eyebrow">IMAGERY MARKERS</span
-          ><label class="toggle"
-            ><span><b class="dot sand"></b>Photo locations</span
-            ><input id="imagery" type="checkbox" checked /><i></i></label
-          ><label for="markerMode">Marker visibility</label
+          <span class="eyebrow">P1 VISIBILITY</span
+          ><label for="markerMode">P1 marker range</label
           ><select id="markerMode">
             <option value="all">All markers</option>
             <option value="near">Nearby markers · Simulated range</option>
           </select>
           <p class="muted">
-            P1 is a simulated access anchor at X 600, Y 330. The real camera location is
-            shown in the NASA landing-site inset. No geographic registration is claimed.
+            P1 is an approximate camera-site estimate near X 300, Y 359. Its dashed circle
+            expresses unquantified location uncertainty, not a measured error bound.
+            Nearby is a simulated range only.
           </p>
           <p id="nearbySummary" class="muted" role="status"></p>
         </div>
@@ -201,6 +213,31 @@
                     role="img"
                     aria-label="Jezero Crater map with illustrative paths and science markers"
                   >
+                    <g id="regionalObservationLayer">
+                      <g
+                        id="deltaFrontRegion"
+                        role="button"
+                        tabindex="0"
+                        aria-label="Delta-front observation area: approximate region, open Skinner and Wildcat materials"
+                        aria-pressed="false"
+                      >
+                        <title>
+                          Delta-front observation area — approximate visual envelope, not
+                          a surveyed boundary
+                        </title>
+                        <polygon
+                          id="deltaFrontArea"
+                          points="245,326 276,326 290,339 287,361 273,374 249,366 240,346"
+                        />
+                        <path class="region-leader" d="M225 302 L254 330" />
+                        <g id="deltaFrontLabel" transform="translate(225 286)">
+                          <text>Delta-front observation area</text>
+                          <text y="17" class="region-precision-label">
+                            Approximate observation area
+                          </text>
+                        </g>
+                      </g>
+                    </g>
                     <g id="hazardLayer">
                       <ellipse
                         cx="340"
@@ -222,11 +259,27 @@
                     <g id="routeLayer">
                       <polyline id="routeGlow" class="route-glow" points="" />
                       <polyline id="routeLine" class="route-line" points="" />
+                      <g
+                        id="presetHomeMarker"
+                        class="home-marker"
+                        transform="translate(250 580)"
+                      >
+                        <circle r="22" />
+                        <text y="5">⌂</text>
+                      </g>
                     </g>
                     <g id="customMapLayer">
                       <polyline id="customRouteGlow" class="route-glow" points="" />
                       <polyline id="customRouteLine" class="route-line" points="" />
                       <g id="customWaypointLayer"></g>
+                      <g
+                        id="customHomeMarker"
+                        class="home-marker"
+                        transform="translate(250 580)"
+                      >
+                        <circle r="22" />
+                        <text y="5">⌂</text>
+                      </g>
                     </g>
                     <g id="scienceLayer">
                       <g
@@ -261,18 +314,30 @@
                       </g>
                     </g>
                     <g id="imageryLayer">
+                      <circle
+                        id="p1Uncertainty"
+                        cx="300"
+                        cy="359"
+                        r="36"
+                        fill="#f7be6c"
+                        fill-opacity=".1"
+                        stroke="#f7be6c"
+                        stroke-width="2"
+                        stroke-dasharray="7 5"
+                        pointer-events="none"
+                      />
                       <g
                         id="photoMarker"
                         role="button"
                         tabindex="0"
                         aria-label="P1 Perseverance landing-site imagery"
                         class="marker"
-                        transform="translate(600 330)"
+                        transform="translate(300 359)"
                       >
                         <circle r="26" fill="#9d5e32" stroke="#ffcf91" stroke-width="3" />
                         <text y="7" style="font-size: 20px">P1</text>
                         <text y="-34" style="font-size: 17px">
-                          Landing-site photo · SIM anchor
+                          Approximate camera location
                         </text>
                       </g>
                     </g>
@@ -291,19 +356,15 @@
                       />
                       <circle r="33" fill="none" stroke="#f0a16f" stroke-width="2" />
                     </g>
-                    <g class="home-marker" transform="translate(250 580)">
-                      <circle r="22" />
-                      <text y="5">⌂</text>
-                    </g>
                   </svg>
                 </div>
                 <div class="map-toplabel">
                   ● ORBITAL DATA / HRSC <span>+ SIMULATED MISSION LAYERS</span>
                 </div>
                 <div class="map-legend">
-                  <div><b class="legend-line"></b> PROPOSED ROUTE</div>
-                  <div><b class="legend-red"></b> DEMO HAZARD</div>
-                  <div><b class="legend-teal"></b> DEMO TARGET</div>
+                  <div id="routeLegend"><b class="legend-line"></b> SIM ROUTE</div>
+                  <div id="hazardLegend"><b class="legend-red"></b> SIM HAZARD</div>
+                  <div id="scienceLegend"><b class="legend-teal"></b> SIM SITE</div>
                 </div>
                 <div class="map-alert" id="mapAlert">
                   Concept overlay: shapes and coordinates are not georeferenced or safety
@@ -344,6 +405,28 @@
                       <strong>Record an environmental change</strong
                       ><small id="extraTaskStatus"
                         >Choose any map point · View details</small
+                      >
+                    </button>
+                  </details>
+                  <details open>
+                    <summary>Delta-front regional materials</summary>
+                    <button class="task-card" id="openRegion">
+                      <strong>Hogwallow Flats · Skinner · Wildcat</strong
+                      ><small
+                        >Approximate map area · Individual rock positions
+                        unverified</small
+                      >
+                    </button>
+                    <button class="task-card" data-observation-node="N2">
+                      <strong>Skinner: mark a layer or abrasion patch</strong
+                      ><small id="skinnerTaskStatus"
+                        >Not completed · Preview anytime</small
+                      >
+                    </button>
+                    <button class="task-card" data-observation-node="N3">
+                      <strong>Wildcat: compare the close-ups</strong
+                      ><small id="wildcatTaskStatus"
+                        >Not completed · Preview anytime</small
                       >
                     </button>
                   </details>
@@ -511,111 +594,248 @@
       </main>
     </div>
     <dialog id="photoDialog" aria-labelledby="photoTitle">
-      <div class="dialog-head">
-        <div>
-          <div class="eyebrow">P1 / REAL IMAGERY</div>
-          <h2 id="photoTitle">Perseverance landing site · Looking west at the delta</h2>
+      <div class="observation-header">
+        <div class="dialog-head">
+          <div>
+            <div class="eyebrow" id="observationNodeId"></div>
+            <h2 id="photoTitle"></h2>
+          </div>
+          <button id="closePhoto">Close</button>
         </div>
-        <button id="closePhoto">Close ×</button>
+        <nav class="observation-tabs" aria-label="Observation nodes">
+          <button data-observation-node="P1">P1 | Landing site</button
+          ><button data-observation-node="N2">Skinner</button
+          ><button data-observation-node="N3">Wildcat</button>
+        </nav>
       </div>
-      <dl class="photo-metadata">
-        <div>
-          <dt>Camera location</dt>
-          <dd>Octavia E. Butler Landing, Jezero crater</dd>
-        </div>
-        <div>
-          <dt>Direction</dt>
-          <dd>West</dd>
-        </div>
-        <div>
-          <dt>Captured</dt>
-          <dd>February 22, 2021 (Sol 4), Mastcam-Z</dd>
-        </div>
-        <div>
-          <dt>Observation target</dt>
-          <dd>Ancient delta remnant: raised dark-brown rock in the middle ground</dd>
-        </div>
-        <div>
-          <dt>Location precision</dt>
-          <dd>
-            Landing-site identification from the NASA caption and star-marked HiRISE
-            inset. Exact camera pose, heading in degrees and registration to the regional
-            mission map remain unverified.
-          </dd>
-        </div>
-      </dl>
-      <p class="muted">
-        P1 on the regional map is a simulated access anchor, not a measured camera
-        position. The official star in the inset identifies the landing site; do not treat
-        the planned walking route as the rover's historical path.
-      </p>
+      <p id="observationTaskPrompt"></p>
+      <label class="check layer-dialog-control"
+        ><input
+          id="photoLayerControl"
+          type="checkbox"
+          data-layer-control="imagery"
+          checked
+        /><span id="photoLayerControlLabel">Landing-site imagery · P1</span> (turn off to
+        hide this layer and close its card)</label
+      >
+      <label for="observationImage">Image / instrument</label
+      ><select id="observationImage"></select>
+      <section
+        id="beginnerHelp"
+        class="beginner-help"
+        hidden
+        aria-label="Observation tips"
+      >
+        <p id="beginnerHint"></p>
+        <label class="check"
+          ><input
+            id="showReferences"
+            type="checkbox"
+            aria-controls="photoReferences comparisonReferences"
+          />Show reference annotations</label
+        >
+        <small
+          >Reference: cyan dashed boxes · Your mark: yellow +. Examples only; use your own
+          words.</small
+        >
+      </section>
+      <dl class="photo-metadata" id="photoMetadata"></dl>
       <div class="photo-layout">
         <section>
           <div
             id="photoCanvas"
             tabindex="0"
             role="button"
-            aria-label="Mark the ancient delta in the surface photo"
+            aria-label="Mark a feature in the observation photo"
           >
-            <img
-              src="assets/delta.jpg"
-              alt="Perseverance looks west at the ancient delta: scattered rocks in the foreground and a raised, layered formation in the middle ground"
-            /><span id="annotation" hidden>＋<small>My observation</small></span>
+            <img id="observationPhoto" src="assets/delta.jpg" alt="" />
+            <div
+              id="photoReferences"
+              class="reference-overlay"
+              hidden
+              aria-hidden="true"
+            ></div>
+            <span id="annotation" hidden>+<small>My observation</small></span>
           </div>
-          <p class="credit">
-            NASA/JPL-Caltech/ASU/MSSS ·
-            <a
-              href="https://science.nasa.gov/resource/perseverance-view-of-the-delta-in-jezero-crater/"
-              target="_blank"
-              rel="noreferrer"
-              >NASA surface image source ↗</a
-            >
-          </p>
-          <label for="observation">Observation notes</label
+          <p id="imageCaption"></p>
+          <p class="credit" id="imageCredit"></p>
+          <label for="observation">Observation notes / visible difference</label
           ><textarea
             id="observation"
             maxlength="1000"
-            placeholder="Describe the shape or layering that supports your identification."
+            placeholder="Write one visible observation. Drafts are saved automatically for this node and image."
           ></textarea>
-          <p class="muted">
-            Click the photo to place a marker. Use arrow keys to move it and Enter to
-            confirm. Drafts are saved automatically.
-          </p>
-          <button id="saveObservation" class="primary">Save observation</button>
+          <div class="actions">
+            <button id="saveDraft">Save unfinished draft</button
+            ><button id="saveObservation" class="primary">Save observation</button>
+          </div>
+          <label class="check"
+            ><input id="confirmObservation" type="checkbox" />I confirm this node's task
+            is complete</label
+          >
           <p id="observationStatus" role="status"></p>
+          <p class="muted" id="observationTimes"></p>
         </section>
         <aside>
-          <h3>Official landing-site inset ? PIA24483</h3>
-          <a href="assets/landing-site.jpg" target="_blank" rel="noreferrer"
-            ><img
-              class="orbital"
-              src="assets/landing-site.jpg"
-              alt="NASA HiRISE map with an official yellow star and label identifying Octavia E. Butler Landing"
-          /></a>
-          <p>
-            The yellow star is NASA's annotation of the landing location. The
-            surface-photo caption identifies this landing site as the camera location.
-            This supports the named site, not an independently surveyed camera coordinate.
-          </p>
-          <p class="credit">
-            NASA/JPL-Caltech/University of Arizona ?
-            <a
-              href="https://www.jpl.nasa.gov/images/pia24483-welcome-to-octavia-e-butler-landing/"
-              target="_blank"
-              rel="noreferrer"
-              >NASA official landing-site annotation ?</a
-            >
-            ? Published March 5, 2021; orbital acquisition date not established here.
-          </p>
-          <p class="muted">
-            Click the inset to open the full image. Nearby filtering uses a radius of 120
-            schematic map units around the explorer and the simulated P1 anchor. This is a
-            simulated range, with no conversion to real meters.
-          </p>
+          <section id="landingContext">
+            <h3>Official landing-site inset | PIA24483</h3>
+            <a href="assets/landing-site.jpg" target="_blank" rel="noreferrer"
+              ><img
+                class="orbital"
+                src="assets/landing-site.jpg"
+                alt="NASA HiRISE map with an official yellow star identifying Octavia E. Butler Landing"
+            /></a>
+            <p>
+              The camera was at the landing site. The observed delta remnant is about 2.3
+              km west of it; camera and target are different places. The yellow star is
+              the official landing-site annotation.
+            </p>
+            <p class="credit">
+              NASA/JPL-Caltech/University of Arizona |
+              <a
+                href="https://www.jpl.nasa.gov/images/pia24483-welcome-to-octavia-e-butler-landing/"
+                target="_blank"
+                rel="noreferrer"
+                >Official source</a
+              >
+              | Published March 5, 2021; acquisition date not established.
+            </p>
+            <p class="muted">
+              The regional estimate (300,359) comes from approximate reading of the map
+              graticule using the review's landing-site reference. The dashed circle is an
+              uncertainty symbol with no verified metric accuracy. Exact camera pose and
+              map registration remain unverified. The 2.3 km is the caption's
+              camera-to-target distance, not a walking distance.
+            </p>
+          </section>
+          <section id="comparisonContext" hidden>
+            <h3>Compare: Skinner Ridge</h3>
+            <div class="comparison-canvas">
+              <img
+                id="comparisonPhoto"
+                src="assets/skinner-closeup.png"
+                alt="Skinner Ridge WATSON close-up, Thornton Gap, with original 5 mm scale"
+              />
+              <div
+                id="comparisonReferences"
+                class="reference-overlay"
+                hidden
+                aria-hidden="true"
+              ></div>
+            </div>
+            <p>
+              Use the Wildcat close-up in the main panel to compare visible texture with
+              this Skinner image. The original scale bars are retained; image colors alone
+              do not identify minerals or life.
+            </p>
+            <p class="credit">
+              PIA24926-left | Captured June 29, 2022 (Sol 482) | SHERLOC/WATSON |
+              NASA/JPL-Caltech/MSSS |
+              <a
+                href="https://science.nasa.gov/resource/two-abrasion-patches-from-perseverance-at-jezero-delta/"
+                target="_blank"
+                rel="noreferrer"
+                >Paired close-up source</a
+              >
+            </p>
+          </section>
+          <section id="regionalNodeContext" hidden>
+            <h3>Delta-front regional materials</h3>
+            <p>
+              Skinner and Wildcat are identified targets in the same local observation
+              cluster. Their absolute camera and target coordinates have not been
+              established here; these cards are not proximity-triggered.
+            </p>
+            <button id="regionFromPhoto">Open official regional context</button>
+          </section>
         </aside>
       </div>
     </dialog>
+    <dialog id="regionDialog" aria-labelledby="regionTitle">
+      <label class="check layer-dialog-control"
+        ><input type="checkbox" data-layer-control="deltaFront" checked />Delta-front
+        observation area (turn off to close)</label
+      >
+      <div class="dialog-head">
+        <div>
+          <div class="eyebrow">REGIONAL MATERIALS | APPROXIMATE OBSERVATION AREA</div>
+          <h2 id="regionTitle">Hogwallow Flats | Delta-front rock observations</h2>
+        </div>
+        <button id="closeRegion">Close</button>
+      </div>
+      <p>
+        Hogwallow Flats is a named area in the delta-front context. Skinner Ridge and
+        Wildcat Ridge are nearby rock targets in this local observation cluster. Their
+        individual positions and the exact region boundary are not registered to our
+        regional map. These materials stay available through this list, independently of
+        All/Nearby filtering.
+      </p>
+      <p id="regionPrecision" class="region-precision-note">
+        The map polygon is a broad visual envelope along the delta's eastern/southeastern
+        margin, northwest of the approximate landing-site marker. It was cross-checked
+        against the regional HRSC image and official HiRISE views, not fitted to surveyed
+        control points. Its vertices express approximate coverage only, with no quantified
+        accuracy. They do not locate either individual rock, define a traversable route,
+        or participate in Nearby filtering.
+      </p>
+      <div class="region-grid">
+        <figure>
+          <a href="assets/delta-front-context.jpg" target="_blank" rel="noreferrer"
+            ><img
+              src="assets/delta-front-context.jpg"
+              alt="Official MRO HiRISE context map labels Hogwallow Flats and other delta-front locations"
+          /></a>
+          <figcaption>
+            Orbital context, PIA24923 | MRO/HiRISE | NASA/JPL-Caltech/University of
+            Arizona/USGS. Published September 15, 2022; acquisition date unresolved. The
+            red star is the rover in September 2022, not P1 or a June camera pose.
+            <a
+              href="https://www.jpl.nasa.gov/images/pia24923-perseverance-exploring-the-front-of-the-delta/"
+              target="_blank"
+              rel="noreferrer"
+              >Source</a
+            >
+          </figcaption>
+        </figure>
+        <figure>
+          <a href="assets/delta-targets-annotated.png" target="_blank" rel="noreferrer"
+            ><img
+              src="assets/delta-targets-annotated.png"
+              alt="Official Mastcam-Z ground panorama with Skinner Ridge labeled upper right and Wildcat Ridge lower left"
+          /></a>
+          <figcaption>
+            Ground panorama (not an orbital map), PIA24924 Figure A | August 4, 2022 / Sol
+            518 | Mastcam-Z | Enhanced color | NASA/JPL-Caltech/ASU/MSSS. The official
+            labels identify both targets; the caption places them about 20 m apart, not a
+            measured walking route.
+            <a
+              href="https://www.jpl.nasa.gov/images/pia24924-2-perseverance-sampling-locations-in-jezeros-delta/"
+              target="_blank"
+              rel="noreferrer"
+              >Source</a
+            >
+          </figcaption>
+        </figure>
+      </div>
+      <div class="region-grid">
+        <button class="task-card" data-observation-node="N2">
+          <strong>Skinner Ridge</strong
+          ><small
+            >Workspace + WATSON close-up | Mark a layer or abrasion patch</small
+          ></button
+        ><button class="task-card" data-observation-node="N3">
+          <strong>Wildcat Ridge</strong
+          ><small
+            >Workspace + paired WATSON close-ups | Record one visible difference</small
+          >
+        </button>
+      </div>
+    </dialog>
     <dialog id="fieldNoteDialog" aria-labelledby="fieldNoteTitle">
+      <label class="check layer-dialog-control"
+        ><input type="checkbox" data-layer-control="notes" checked />Environmental records
+        (turn off to close)</label
+      >
       <div class="dialog-head">
         <h2 id="fieldNoteTitle">Saved field note</h2>
         <button id="closeFieldNote">Close ×</button>
@@ -642,6 +862,10 @@
       <button id="startEnvironmentTask">Choose a map point</button>
     </dialog>
     <dialog id="customTaskDialog" aria-labelledby="customTaskTitle">
+      <label class="check layer-dialog-control"
+        ><input type="checkbox" data-layer-control="customMap" checked />Custom route
+        &amp; waypoints (turn off to close)</label
+      >
       <div class="dialog-head">
         <h2 id="customTaskTitle">Waypoint task</h2>
         <button id="closeCustomTask">Close</button>
@@ -684,6 +908,8 @@
       </form>
       <button id="completeCustomTask" class="primary">Complete waypoint task</button>
     </dialog>
+    <script src="observation-data.js"></script>
+    <script src="observation-viewer.js"></script>
     <script src="mission.js"></script>
   </body>
 </html>
