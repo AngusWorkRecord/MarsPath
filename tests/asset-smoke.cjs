@@ -1,0 +1,3 @@
+﻿const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const {pathToFileURL}=require('node:url');const path=require('node:path');
+(async()=>{const b=await chromium.launch({channel:'chrome',headless:true});const p=await b.newPage();p.on('pageerror',e=>console.log('PAGE ERROR',e.message));await p.goto(pathToFileURL(path.resolve('mission.html')).href,{waitUntil:'load'});console.log(await p.locator('#activeObjective').textContent());console.log(await p.locator('img').evaluateAll(images=>images.map(img=>({src:img.getAttribute('src'),width:img.naturalWidth,complete:img.complete}))));await b.close();})();
