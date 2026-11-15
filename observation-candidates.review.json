@@ -1,0 +1,577 @@
+{
+  "schemaVersion": "review-1",
+  "reviewDate": "2026-11-15",
+  "status": "proposal_not_imported",
+  "scope": "NASA sources; no runnable route or safety assessment",
+  "missionIds": [
+    "Mars Reconnaissance Orbiter",
+    "Mars 2020 / Perseverance"
+  ],
+  "assetStatus": "URLs inventoried; new images not downloaded or decode-verified",
+  "unknownValueConvention": "null means unknown, not zero or false",
+  "spatialConvention": {
+    "photoMarks": "Normalized full-frame image coordinates, with sourceId and derivative crop metadata",
+    "mapCoordinates": "Must include map frame ID; geographic data separate from UI anchor",
+    "metricNavigationEnabled": false
+  },
+  "sources": [
+    {
+      "id": "S1",
+      "productId": null,
+      "role": "regional_context",
+      "page": "https://www.jpl.nasa.gov/images/map-of-mars-jezero-crater/",
+      "download": "https://d2pn8kiwq2w21t.cloudfront.net/original_images/Katie_1_-_DLR_Jezero_hi_v2.jpg",
+      "mission": "ESA Mars Express",
+      "instrument": "HRSC",
+      "credit": "ESA/DLR/FU Berlin/HRSC",
+      "published": "2025-09-10",
+      "acquired": null,
+      "localExisting": "assets/jezero-regional.jpg"
+    },
+    {
+      "id": "S2",
+      "productId": "PIA24485",
+      "role": "surface",
+      "page": "https://www.jpl.nasa.gov/images/pia24485-perseverance-view-of-the-delta-in-jezero-crater/",
+      "download": "https://d2pn8kiwq2w21t.cloudfront.net/original_images/jpegPIA24485.jpg",
+      "mission": "Mars 2020 / Perseverance",
+      "instrument": "Mastcam-Z",
+      "credit": "NASA/JPL-Caltech/ASU/MSSS",
+      "published": "2021-03-05",
+      "acquired": "2021-02-22",
+      "sol": 4,
+      "color": "estimated_natural",
+      "headingLabel": "west",
+      "azimuthDeg": null,
+      "localExisting": "assets/delta.jpg"
+    },
+    {
+      "id": "S3",
+      "productId": "PIA24483",
+      "role": "orbital_annotated_context",
+      "page": "https://www.jpl.nasa.gov/images/pia24483-welcome-to-octavia-e-butler-landing/",
+      "download": "https://d2pn8kiwq2w21t.cloudfront.net/original_images/jpegPIA24483.jpg",
+      "mission": "Mars Reconnaissance Orbiter",
+      "instrument": "HiRISE",
+      "credit": "NASA/JPL-Caltech/University of Arizona",
+      "published": "2021-03-05",
+      "acquired": null,
+      "localExisting": "assets/landing-site.jpg"
+    },
+    {
+      "id": "S4",
+      "productId": "PIA24923",
+      "role": "orbital_annotated_context",
+      "page": "https://www.jpl.nasa.gov/images/pia24923-perseverance-exploring-the-front-of-the-delta/",
+      "download": "https://d2pn8kiwq2w21t.cloudfront.net/original_images/jpegPIA24923.jpg",
+      "mission": "Mars Reconnaissance Orbiter",
+      "instrument": "HiRISE",
+      "credit": "NASA/JPL-Caltech/University of Arizona/USGS",
+      "published": "2022-09-15",
+      "acquired": null,
+      "warning": "Red star is rover location in September 2022, not the landing site or any June camera pose."
+    },
+    {
+      "id": "S5",
+      "productId": "PIA24925",
+      "role": "surface_workspace_mosaic",
+      "page": "https://www.jpl.nasa.gov/images/pia24925-perseverance-workspace-at-skinner-ridge/",
+      "download": "https://d2pn8kiwq2w21t.cloudfront.net/original_images/jpegPIA24925.jpg",
+      "mission": "Mars 2020 / Perseverance",
+      "instrument": "Mastcam-Z",
+      "credit": "NASA/JPL-Caltech/ASU/MSSS",
+      "published": "2022-09-15",
+      "acquired": null,
+      "acquisitionAsPublished": "June 30–July 8, 2022 (PDT), sols 484–492",
+      "color": "enhanced",
+      "azimuthDeg": null
+    },
+    {
+      "id": "S6L",
+      "productId": "PIA24926-left",
+      "role": "surface_closeup",
+      "page": "https://science.nasa.gov/resource/two-abrasion-patches-from-perseverance-at-jezero-delta/",
+      "download": "https://assets.science.nasa.gov/dynamicimage/assets/science/psd/mars/downloadable_items/4/7/47549_PIA24926-LEFT.png?fit=clip&w=981",
+      "mission": "Mars 2020 / Perseverance",
+      "instrument": "SHERLOC / WATSON",
+      "credit": "NASA/JPL-Caltech/MSSS",
+      "published": "2022-09-15",
+      "acquired": "2022-06-29",
+      "sol": 482,
+      "azimuthDeg": null,
+      "cameraStandoffApproxM": 0.07
+    },
+    {
+      "id": "S6R",
+      "productId": "PIA24926-right",
+      "role": "surface_closeup",
+      "page": "https://science.nasa.gov/resource/two-abrasion-patches-from-perseverance-at-jezero-delta/",
+      "download": "https://assets.science.nasa.gov/dynamicimage/assets/science/psd/mars/downloadable_items/4/7/47553_PIA24926-RIGHT.png?fit=clip&w=981",
+      "mission": "Mars 2020 / Perseverance",
+      "instrument": "SHERLOC / WATSON",
+      "credit": "NASA/JPL-Caltech/MSSS",
+      "published": "2022-09-15",
+      "acquired": "2022-07-21",
+      "sol": 504,
+      "azimuthDeg": null,
+      "cameraStandoffApproxM": 0.07
+    },
+    {
+      "id": "S7E",
+      "productId": "PIA25672",
+      "role": "surface",
+      "page": "https://www.jpl.nasa.gov/images/pia25672-perseverances-mastcam-z-views-hogwallow-flats/",
+      "download": "https://d2pn8kiwq2w21t.cloudfront.net/original_images/jpegPIA25672.jpg",
+      "mission": "Mars 2020 / Perseverance",
+      "instrument": "Mastcam-Z",
+      "credit": "NASA/JPL-Caltech/ASU/MSSS",
+      "published": "2022-12-15",
+      "acquired": "2022-06-06",
+      "sol": 461,
+      "color": "enhanced",
+      "azimuthDeg": null
+    },
+    {
+      "id": "S7N",
+      "productId": "SOL0461_ZCAM08482_Z110_L0_NN",
+      "role": "surface",
+      "page": "https://mastcamz.asu.edu/galleries/sol-0461-hogwallow-flats-light-toned-smith-mountain-01-mastcam-z-mosaic/",
+      "download": "https://mcz-images.sese.asu.edu/zcam_mosaics/CZCAM_SOL0461_ZCAM08482_Z110_L0_NN_SCI_CYL_HOGWALLOW_FLATS_LIGHT_TONED_SMITH_MOUNTAIN_01.png",
+      "mission": "Mars 2020 / Perseverance",
+      "instrument": "Mastcam-Z",
+      "credit": "NASA/JPL-Caltech/ASU/MSSS",
+      "published": null,
+      "acquired": "2022-06-06",
+      "sol": 461,
+      "color": "natural",
+      "azimuthDeg": null,
+      "warning": "Very large source file; derive a preview after approval and verify matching field of view."
+    },
+    {
+      "id": "S8",
+      "productId": "PIA24928",
+      "role": "surface_workspace_mosaic",
+      "page": "https://www.jpl.nasa.gov/images/pia24928-sample-collection-and-rock-analysis-at-wildcat-ridge/",
+      "download": "https://assets.science.nasa.gov/dynamicimage/assets/science/psd/photojournal/pia/pia24/pia24928/PIA24928.jpg?fit=clip&w=3225",
+      "mission": "Mars 2020 / Perseverance",
+      "instrument": "Mastcam-Z",
+      "credit": "NASA/JPL-Caltech/ASU/MSSS",
+      "published": "2022-09-15",
+      "acquired": "2022-08-04",
+      "sol": 518,
+      "color": "enhanced",
+      "azimuthDeg": null
+    },
+    {
+      "id": "S9",
+      "role": "science_context",
+      "page": "https://www.jpl.nasa.gov/news/nasas-perseverance-rover-investigates-geologically-rich-mars-terrain/",
+      "download": null,
+      "published": "2022-09-15",
+      "warning": "Historical report; not evidence of life or a source for current sample locations/future schedules."
+    },
+    {
+      "id": "S10",
+      "role": "landing_coordinate_evidence",
+      "page": "https://ntrs.nasa.gov/api/citations/20230016428/downloads/Bell%20et%20al%202022sciadv.pdf",
+      "download": "https://ntrs.nasa.gov/api/citations/20230016428/downloads/Bell%20et%20al%202022sciadv.pdf",
+      "citation": "Bell et al., Science Advances 8, eabo4856 (2022), page 1 introduction",
+      "warning": "Reference frame and coordinate accuracy must be reconciled before geospatial registration."
+    },
+    {
+      "id": "S11A",
+      "productId": "PIA24924-Figure-A",
+      "role": "surface_annotated_context",
+      "page": "https://www.jpl.nasa.gov/images/pia24924-2-perseverance-sampling-locations-in-jezeros-delta/",
+      "download": "https://assets.science.nasa.gov/dynamicimage/assets/science/psd/mars/downloadable_items/4/7/47572_PIA24924_two_sampling_locations_FigA.png?fit=clip&w=1920",
+      "mission": "Mars 2020 / Perseverance",
+      "instrument": "Mastcam-Z",
+      "credit": "NASA/JPL-Caltech/ASU/MSSS",
+      "published": "2022-09-15",
+      "acquired": "2022-08-04",
+      "sol": 518,
+      "color": "enhanced",
+      "azimuthDeg": null,
+      "warning": "Ground view, not overhead; two outcrops about 20 m apart is caption evidence, not route measurement."
+    },
+    {
+      "id": "S12",
+      "role": "historical_position_lookup_pending",
+      "page": "https://science.nasa.gov/mission/mars-2020-perseverance/location-map/",
+      "download": null,
+      "warning": "No historical traverse export performed in this review."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "P1",
+      "name": "Octavia E. Butler Landing — westward delta view",
+      "status": "existing_photo_verified_regional_estimate_only",
+      "uiAnchor": {
+        "frame": "legacy-schematic-1000x773",
+        "x": 600,
+        "y": 330,
+        "geographic": false
+      },
+      "cameraPosition": {
+        "latitudeDeg": 18.4446,
+        "longitudeEastDeg": 77.4509,
+        "referenceFrame": null,
+        "accuracyM": null,
+        "kind": "published_landing_site_reference_not_solved_camera_pose",
+        "sourceIds": [
+          "S2",
+          "S3",
+          "S10"
+        ]
+      },
+      "targetPosition": {
+        "latitudeDeg": null,
+        "longitudeEastDeg": null,
+        "referenceFrame": null,
+        "accuracyM": null,
+        "name": "Unnamed delta remnant in PIA24485",
+        "directionFromCamera": "west",
+        "distanceFromCameraApproxM": 2300,
+        "sourceIds": [
+          "S2"
+        ]
+      },
+      "regionalDisplayEstimate": {
+        "frame": "full-regional-jpg-svg-1000x773",
+        "x": 300,
+        "y": 359,
+        "method": "Visual graticule interpolation; not fitted georeferencing",
+        "accuracyM": null,
+        "autoApply": false
+      },
+      "insetSymbol": {
+        "frame": "existing-landing-site-jpg-1600x900",
+        "normalizedX": 0.485,
+        "normalizedY": 0.632,
+        "kind": "approximate_reading_of_published_star"
+      },
+      "orbitalSourceIds": [
+        "S3"
+      ],
+      "surfaceSourceIds": [
+        "S2"
+      ],
+      "taskId": "T-P1",
+      "unknowns": [
+        "Exact camera pose",
+        "Azimuth in degrees",
+        "Target geographic coordinate",
+        "Regional projection registration"
+      ]
+    },
+    {
+      "id": "N1",
+      "name": "Hogwallow Flats — regional observation",
+      "status": "candidate_region_only",
+      "uiAnchor": null,
+      "cameraPosition": {
+        "latitudeDeg": null,
+        "longitudeEastDeg": null,
+        "referenceFrame": null,
+        "accuracyM": null,
+        "kind": "historical_rover_pose_unresolved",
+        "sourceIds": [
+          "S7E",
+          "S7N"
+        ]
+      },
+      "targetPosition": {
+        "latitudeDeg": null,
+        "longitudeEastDeg": null,
+        "referenceFrame": null,
+        "accuracyM": null,
+        "name": "Hogwallow Flats exposed rocks",
+        "kind": "named_region",
+        "sourceIds": [
+          "S4",
+          "S7E"
+        ]
+      },
+      "orbitalSourceIds": [
+        "S4"
+      ],
+      "surfaceSourceIds": [
+        "S7E",
+        "S7N"
+      ],
+      "taskId": "T-N1",
+      "unknowns": [
+        "Camera location on sol 461",
+        "Heading",
+        "Target footprint",
+        "Slope",
+        "Bearing strength"
+      ],
+      "scienceStatements": [
+        {
+          "text": "Ancient underwater deposition of fine-grained sedimentary rocks",
+          "evidenceIds": [
+            "S7E"
+          ],
+          "type": "team_interpretation"
+        }
+      ]
+    },
+    {
+      "id": "N2",
+      "name": "Skinner Ridge — layers and grains",
+      "status": "candidate_target_identified_absolute_position_pending",
+      "uiAnchor": null,
+      "cameraPosition": {
+        "latitudeDeg": null,
+        "longitudeEastDeg": null,
+        "referenceFrame": null,
+        "accuracyM": null,
+        "kind": "mast_and_arm_camera_poses_unresolved",
+        "sourceIds": [
+          "S5",
+          "S6L"
+        ]
+      },
+      "targetPosition": {
+        "latitudeDeg": null,
+        "longitudeEastDeg": null,
+        "referenceFrame": null,
+        "accuracyM": null,
+        "name": "Skinner Ridge outcrop and abrasion patch",
+        "kind": "annotated_surface_target",
+        "sourceIds": [
+          "S5",
+          "S6L",
+          "S11A"
+        ]
+      },
+      "orbitalSourceIds": [
+        "S4"
+      ],
+      "orbitalAssociationPrecision": "Shared named-region context only; no individual outcrop pixel verified",
+      "surfaceSourceIds": [
+        "S5",
+        "S6L",
+        "S11A"
+      ],
+      "taskId": "T-N2",
+      "recommendedFirst": true,
+      "unknowns": [
+        "Individual orbital location",
+        "Single pose for multi-day mosaic",
+        "Layer dip",
+        "Heading",
+        "Stability"
+      ],
+      "scienceStatements": [
+        {
+          "text": "Sandstone with coarser transported grains than Wildcat Ridge",
+          "evidenceIds": [
+            "S6L"
+          ],
+          "type": "team_interpretation"
+        }
+      ]
+    },
+    {
+      "id": "N3",
+      "name": "Wildcat Ridge — fine-grained rock comparison",
+      "status": "candidate_target_identified_absolute_position_pending",
+      "uiAnchor": null,
+      "cameraPosition": {
+        "latitudeDeg": null,
+        "longitudeEastDeg": null,
+        "referenceFrame": null,
+        "accuracyM": null,
+        "kind": "mast_and_arm_camera_poses_unresolved",
+        "sourceIds": [
+          "S8",
+          "S6R"
+        ]
+      },
+      "targetPosition": {
+        "latitudeDeg": null,
+        "longitudeEastDeg": null,
+        "referenceFrame": null,
+        "accuracyM": null,
+        "name": "Wildcat Ridge outcrop, abrasion patch and core holes",
+        "kind": "annotated_surface_target",
+        "sourceIds": [
+          "S8",
+          "S6R",
+          "S11A"
+        ]
+      },
+      "orbitalSourceIds": [
+        "S4"
+      ],
+      "orbitalAssociationPrecision": "Shared named-region context only; no individual outcrop pixel verified",
+      "surfaceSourceIds": [
+        "S8",
+        "S6R",
+        "S11A"
+      ],
+      "taskId": "T-N3",
+      "unknowns": [
+        "Individual orbital location",
+        "Camera headings",
+        "Current physical condition",
+        "Origin of reported organics"
+      ],
+      "scienceStatements": [
+        {
+          "text": "Fine-grained sulfate-bearing mudstone; ancient saltwater setting interpretation",
+          "evidenceIds": [
+            "S6R"
+          ],
+          "type": "team_interpretation"
+        },
+        {
+          "text": "2022 SHERLOC organic-related interpretation; not a photographic detection or proof of life",
+          "evidenceIds": [
+            "S9"
+          ],
+          "type": "dated_historical_report"
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-P1",
+      "nodeId": "P1",
+      "title": "Identify the distant delta remnant",
+      "requiredEvidence": [
+        {
+          "sourceId": "S2",
+          "markKind": "delta_remnant"
+        }
+      ],
+      "requiredNotes": [
+        "One visible morphological feature",
+        "Camera is at landing site; target is distant west"
+      ],
+      "completion": "All required evidence and notes saved, followed by user confirmation"
+    },
+    {
+      "id": "T-N1",
+      "nodeId": "N1",
+      "title": "Compare natural and enhanced color",
+      "requiredEvidence": [
+        {
+          "sourceId": "S7E",
+          "markKind": "exposed_rock"
+        },
+        {
+          "sourceId": "S7N",
+          "markKind": "matching_exposed_rock"
+        }
+      ],
+      "requiredNotes": [
+        "One shared shape",
+        "One color-processing difference",
+        "Color alone does not identify mineral"
+      ],
+      "completion": "Both image records and all notes saved, followed by user confirmation"
+    },
+    {
+      "id": "T-N2",
+      "nodeId": "N2",
+      "title": "Document rock layers and visible grains",
+      "requiredEvidence": [
+        {
+          "sourceId": "S5",
+          "markKind": "layer_boundary"
+        },
+        {
+          "sourceId": "S5",
+          "markKind": "abrasion_patch"
+        },
+        {
+          "sourceId": "S6L",
+          "markKind": "grain_region"
+        }
+      ],
+      "requiredNotes": [
+        "Two direct observations",
+        "One unresolved question"
+      ],
+      "completion": "Three marks linked to their image IDs plus notes saved, followed by user confirmation"
+    },
+    {
+      "id": "T-N3",
+      "nodeId": "N3",
+      "title": "Compare Wildcat with Skinner Ridge",
+      "requiredEvidence": [
+        {
+          "sourceId": "S8",
+          "markKind": "abrasion_patch"
+        },
+        {
+          "sourceId": "S8",
+          "markKind": "core_hole"
+        },
+        {
+          "sourceId": "S6R",
+          "markKind": "comparison_region"
+        },
+        {
+          "sourceId": "S6L",
+          "markKind": "comparison_region"
+        }
+      ],
+      "requiredNotes": [
+        "Relative grain-size or texture comparison",
+        "Images alone do not prove composition or life"
+      ],
+      "completion": "All image-specific evidence and notes saved, followed by user confirmation"
+    }
+  ],
+  "relationships": [
+    {
+      "from": "N2",
+      "to": "N3",
+      "type": "caption_relative_separation",
+      "approxDistanceM": 20,
+      "evidenceIds": [
+        "S11A"
+      ],
+      "routeLengthM": null
+    },
+    {
+      "from": "N1",
+      "to": "N2",
+      "type": "shared_local_observation_cluster",
+      "exactContainmentBoundaryVerified": false
+    },
+    {
+      "from": "N1",
+      "to": "N3",
+      "type": "shared_local_observation_cluster",
+      "exactContainmentBoundaryVerified": false
+    }
+  ],
+  "routeAssessment": {
+    "slopeDeg": null,
+    "hazards": null,
+    "traversability": null,
+    "distanceM": null,
+    "durationMinutes": null,
+    "status": "not_assessed"
+  },
+  "rejectedUniversalBasemapCandidate": {
+    "productId": "ESP_048842_1985_RED",
+    "reason": "RDR west boundary 77.45887407155 E excludes landing longitude 77.4509 E; do not infer delta-front coverage",
+    "labelUrl": "https://hirise-pds.lpl.arizona.edu/PDS/RDR/ESP/ORB_048800_048899/ESP_048842_1985/ESP_048842_1985_RED.LBL"
+  },
+  "developerGates": [
+    "Approve content and spatial hierarchy",
+    "Acquire originals and verify full frame, color version and credit",
+    "Verify node-specific orbital positions and historical camera poses",
+    "Do not enable geographic nearby detection with null anchors",
+    "Migrate single-P1 state to per-node task evidence",
+    "Assess terrain separately before metric routes or risk claims"
+  ]
+}

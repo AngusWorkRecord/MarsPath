@@ -177,6 +177,51 @@ dialog p {
   background: #102334c9;
   padding: 3px;
 }
+.beginner-help {
+  background: #142e39;
+  border-left: 3px solid #75e3ed;
+  padding: 10px 14px;
+  margin: 12px 0;
+  line-height: 1.6;
+}
+.beginner-help p {
+  margin: 0;
+}
+.beginner-help small {
+  color: #b6ced7;
+}
+.comparison-canvas {
+  position: relative;
+  line-height: 0;
+}
+#observationPhoto {
+  display: block;
+}
+.reference-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  line-height: 1;
+}
+.reference-box {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px dashed #79f0ff;
+  border-radius: 7px;
+  background: #45d8ee0c;
+}
+.reference-box > span {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  background: #082c39ed;
+  color: #b7f8ff;
+  padding: 4px 5px;
+  font:
+    11px/1.3 system-ui,
+    sans-serif;
+  white-space: nowrap;
+}
 .credit {
   font-size: 10px;
   color: #91a9bb;
@@ -537,4 +582,139 @@ dialog .muted {
   .sidebar-section > summary {
     scroll-margin-top: 190px;
   }
+}
+.observation-tabs {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+.observation-tabs .active {
+  border-color: #f0ad7a;
+  background: #49382b;
+}
+.region-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.region-grid figure {
+  margin: 0;
+}
+.region-grid img,
+#comparisonPhoto {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.region-grid figcaption {
+  font-size: 11px;
+  color: #a8bdcd;
+  line-height: 1.7;
+  margin: 10px 0;
+}
+#photoCanvas img {
+  width: 100%;
+  height: auto;
+}
+#observationTimes {
+  font-size: 11px;
+  line-height: 1.7;
+}
+#p1Uncertainty {
+  vector-effect: non-scaling-stroke;
+}
+@media (max-width: 700px) {
+  .region-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.photo-layout.comparing {
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 700px) {
+  .photo-layout.comparing {
+    grid-template-columns: 1fr;
+  }
+}
+.observation-header {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background: #101e2c;
+  padding-bottom: 4px;
+}
+.photo-layout.comparing > aside {
+  padding-left: 0;
+  border-left: 0;
+}
+#deltaFrontRegion {
+  cursor: pointer;
+  outline: none;
+}
+.selected-location .marker-core,
+.selected-location .marker-glyph > circle:first-child {
+  stroke: #ffe5ad;
+  stroke-width: 5;
+  filter: drop-shadow(0 0 5px #ffca75);
+}
+.layer-dialog-control {
+  padding: 8px 10px;
+  background: #18323f;
+  border: 1px solid #486775;
+  font-size: 12px;
+}
+.layer-help {
+  font-size: 11px;
+  line-height: 1.6;
+}
+.map-legend > [hidden] {
+  display: none;
+}
+#photoMarker text {
+  pointer-events: none;
+}
+#deltaFrontArea {
+  fill: #55d9c8;
+  fill-opacity: 0.24;
+  stroke: #8cf4e2;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  vector-effect: non-scaling-stroke;
+}
+#deltaFrontRegion:hover #deltaFrontArea,
+#deltaFrontRegion:focus-visible #deltaFrontArea {
+  fill-opacity: 0.42;
+  stroke: #f8f0ae;
+}
+#deltaFrontRegion.selected-region #deltaFrontArea {
+  fill: #ffca75;
+  fill-opacity: 0.46;
+  stroke: #ffe5ad;
+  stroke-width: 3;
+}
+.region-leader {
+  fill: none;
+  stroke: #8cf4e2;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+#deltaFrontLabel text {
+  fill: #e4fff8;
+  font-size: 16px;
+  font-weight: bold;
+  paint-order: stroke;
+  stroke: #102732;
+  stroke-width: 4;
+}
+#deltaFrontLabel .region-precision-label {
+  font-size: 13px;
+  font-weight: normal;
+}
+.region-precision-note {
+  padding: 10px 12px;
+  background: #19303a;
+  border-left: 3px solid #6de6d1;
+  font-size: 12px;
+  line-height: 1.7;
 }

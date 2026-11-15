@@ -11,7 +11,7 @@ const routes = {
     name: 'Shortest path',
     risk: 65,
     stops: 1,
-    points: '250,580 330,520 455,465 570,435 690,480',
+    points: '250,580 300,359 455,465 570,435 690,480',
   },
   science: {
     name: 'Science priority',
@@ -22,9 +22,58 @@ const routes = {
 };
 const $ = (id) => document.getElementById(id),
   KEY = 'marspath-mission-v1';
-// These are schematic access anchors, not georeferenced camera coordinates.
-const photoLocations = [{ id: 'P1', markerId: 'photoMarker', x: 600, y: 330 }];
+// Only nodes with a reviewed regional estimate can participate in simulated proximity.
+const photoLocations = Object.values(OBSERVATION_DATA.nodes)
+  .filter((node) => node.anchor)
+  .map((node) => ({ id: node.id, markerId: 'photoMarker', ...node.anchor }));
 const nearbyRadius = 120; // Schematic map units only; never converted to real meters.
+let currentObservationNode = 'P1';
+let currentObservationImage = 'PIA24485';
+function createObservationRecords() {
+  return Object.fromEntries(
+    Object.values(OBSERVATION_DATA.nodes).map((node) => [
+      node.id,
+      {
+        taskId: node.taskId,
+        done: false,
+        completedAt: null,
+        activeImageId: node.defaultImageId,
+        images: Object.fromEntries(
+          node.images.map((imageId) => [
+            imageId,
+            {
+              nodeId: node.id,
+              taskId: node.taskId,
+              imageId,
+              capturedAt: OBSERVATION_DATA.images[imageId].captured,
+              mark: null,
+              draft: '',
+              saved: null,
+              draftUpdatedAt: null,
+            },
+          ]),
+        ),
+      },
+    ]),
+  );
+}
+function observationState(nodeId) {
+  return state.nodeObservations[nodeId];
+}
+function observationEvidence(nodeId) {
+  const record = observationState(nodeId);
+  const candidates = Object.entries(record.images).filter(
+    ([imageId, data]) =>
+      data.saved &&
+      data.saved.text &&
+      (nodeId === 'N3' ? imageId === 'PIA24926-right' : data.saved.mark),
+  );
+  return (
+    candidates.sort(
+      (a, b) => Date.parse(b[1].saved.savedAt) - Date.parse(a[1].saved.savedAt),
+    )[0]?.[1].saved || null
+  );
+}
 const sidebarSections = [...document.querySelectorAll('#taskSidebar > .sidebar-section')];
 function openSidebarSection(selected) {
   sidebarSections.forEach((section) => {
@@ -38,17 +87,15 @@ sidebarSections.forEach((section) => {
   });
 });
 const initial = () => ({
-  version: 1,
+  version: 2,
   route: 'balanced',
+  presetRoute: 'balanced',
   phase: 'planning',
   progress: 0,
   paused: false,
   extra: false,
-  done: false,
-  mark: null,
-  draft: '',
   environment: '',
-  observation: null,
+  nodeObservations: createObservationRecords(),
   records: [],
   mapNotes: [],
   notePosition: null,
@@ -59,6 +106,7 @@ const initial = () => ({
     science: true,
     route: true,
     imagery: true,
+    deltaFront: true,
     customMap: false,
     notes: true,
   },
@@ -70,18 +118,82 @@ const initial = () => ({
 });
 let state = initial(),
   storageOK = true;
+let legacyBackupRaw = null;
 try {
-  const saved = JSON.parse(localStorage.getItem(KEY));
+  const raw = localStorage.getItem(KEY);
+  const saved = JSON.parse(raw);
   if (saved) {
     if (
-      saved.version !== 1 ||
+      ![1, 2].includes(saved.version) ||
       !routes[saved.route] ||
       !['planning', 'outbound', 'returning', 'finished'].includes(saved.phase) ||
       !Number.isFinite(saved.progress) ||
       !Array.isArray(saved.records)
     )
       throw Error('Invalid saved mission');
-    state = { ...state, ...saved, layers: { ...state.layers, ...saved.layers } };
+    const records = createObservationRecords();
+    if (saved.version === 1) {
+      legacyBackupRaw = raw;
+      try {
+        if (!localStorage.getItem(KEY + '-backup-v1'))
+          localStorage.setItem(KEY + '-backup-v1', raw);
+        legacyBackupRaw = null;
+      } catch (backupError) {
+        storageOK = false;
+      }
+      records.P1.images.PIA24485.mark = saved.mark || saved.observation?.mark || null;
+      records.P1.images.PIA24485.draft = saved.draft || saved.observation?.text || '';
+      if (saved.observation)
+        records.P1.images.PIA24485.saved = {
+          ...saved.observation,
+          nodeId: 'P1',
+          taskId: 'T-P1',
+          imageId: 'PIA24485',
+          capturedAt: OBSERVATION_DATA.images.PIA24485.captured,
+          savedAt: saved.observation.time || null,
+        };
+      records.P1.done = Boolean(saved.done);
+      records.P1.completedAt = saved.done
+        ? saved.records.filter((r) => r.kind === 'task' && r.route !== 'custom').at(-1)
+            ?.time || null
+        : null;
+      saved.records = saved.records.map((record) =>
+        record.kind === 'observation' ||
+        (record.kind === 'task' && record.route !== 'custom')
+          ? {
+              ...record,
+              nodeId: 'P1',
+              taskId: 'T-P1',
+              imageId: 'PIA24485',
+              capturedAt: OBSERVATION_DATA.images.PIA24485.captured,
+            }
+          : record,
+      );
+    } else {
+      for (const nodeId of Object.keys(records)) {
+        if (saved.nodeObservations?.[nodeId])
+          records[nodeId] = {
+            ...records[nodeId],
+            ...saved.nodeObservations[nodeId],
+            images: {
+              ...records[nodeId].images,
+              ...saved.nodeObservations[nodeId].images,
+            },
+          };
+      }
+    }
+    state = {
+      ...state,
+      ...saved,
+      version: 2,
+      nodeObservations: records,
+      layers: { ...state.layers, ...saved.layers },
+    };
+    if (saved.route !== 'custom') state.presetRoute = saved.route;
+    if (!['balanced', 'shortest', 'science'].includes(state.presetRoute))
+      state.presetRoute = 'balanced';
+    for (const legacyField of ['mark', 'draft', 'observation', 'done'])
+      delete state[legacyField];
     state.progress = Math.max(0, Math.min(last(), state.progress));
   }
 } catch (e) {
@@ -108,7 +220,7 @@ function isPhotoNearby(photo) {
   return Math.hypot(pos.x - photo.x, pos.y - photo.y) <= nearbyRadius;
 }
 function near() {
-  return isPhotoNearby(photoLocations[0]);
+  return isPhotoNearby(photoLocations.find((photo) => photo.id === 'P1'));
 }
 function environmentTaskDone() {
   return state.records
@@ -126,6 +238,11 @@ function getSimulatedPosition() {
 }
 function save() {
   try {
+    if (legacyBackupRaw) {
+      if (!localStorage.getItem(KEY + '-backup-v1'))
+        localStorage.setItem(KEY + '-backup-v1', legacyBackupRaw);
+      legacyBackupRaw = null;
+    }
     localStorage.setItem(KEY, JSON.stringify(state));
     storageOK = true;
   } catch (e) {
@@ -134,7 +251,7 @@ function save() {
       'Browser storage is unavailable. Keep this page open; reloading will lose this journey.';
   }
 }
-function log(kind, content, position = getSimulatedPosition()) {
+function log(kind, content, position = getSimulatedPosition(), metadata = {}) {
   state.records.push({
     kind,
     content,
@@ -143,6 +260,10 @@ function log(kind, content, position = getSimulatedPosition()) {
     route: state.route,
     progress: state.progress,
     position,
+    nodeId: null,
+    taskId: null,
+    imageId: null,
+    ...metadata,
   });
   save();
   renderLogs();
@@ -173,9 +294,102 @@ function renderLogs() {
       r.kind === 'environment' ? 'Selected map position' : 'Simulated position';
     small.textContent = `${new Date(r.time).toLocaleString('en-GB')} · ${phaseLabel} · ${routes[r.route].name} · Segment progress ${r.progress.toFixed(2)} · ${positionLabel} (${r.position.x.toFixed(0)}, ${r.position.y.toFixed(0)})`;
     text.textContent = r.content;
+    if (r.nodeId)
+      small.textContent += ` · Node ${r.nodeId} / ${r.taskId} / ${r.imageId} · Image captured: ${r.capturedAt || 'not established'} (separate from operation time above)`;
     li.append(small, text);
     $('records').append(li);
   }
+}
+// Layer keys retain existing storage names so earlier journeys restore their choices.
+const layerTargets = {
+  terrain: ['.map-image', '.map-shade'],
+  imagery: ['#imageryLayer'],
+  deltaFront: ['#regionalObservationLayer'],
+  hazards: ['#hazardLayer'],
+  science: ['#scienceLayer'],
+  route: ['#routeLayer'],
+  customMap: ['#customMapLayer'],
+  notes: ['#fieldNoteLayer'],
+};
+function renderLayers() {
+  for (const [key, selectors] of Object.entries(layerTargets)) {
+    const visible = state.layers[key];
+    $(key).checked = visible;
+    for (const selector of selectors)
+      document.querySelectorAll(selector).forEach((element) => {
+        element.style.display = visible ? '' : 'none';
+        element.setAttribute('aria-hidden', String(!visible));
+        element.toggleAttribute('inert', !visible);
+      });
+  }
+  document.querySelectorAll('[data-layer-control]').forEach((control) => {
+    control.checked = state.layers[control.dataset.layerControl];
+  });
+  $('customHomeMarker').style.display = state.customPoints.length ? '' : 'none';
+  $('routeLegend').hidden = !state.layers.route && !state.layers.customMap;
+  $('hazardLegend').hidden = !state.layers.hazards;
+  $('scienceLegend').hidden = !state.layers.science;
+  document.querySelector('.map-legend').style.display =
+    state.layers.route ||
+    state.layers.customMap ||
+    state.layers.hazards ||
+    state.layers.science
+      ? ''
+      : 'none';
+  document.querySelector('.map-toplabel').firstChild.textContent = state.layers.terrain
+    ? '● ORBITAL DATA / HRSC '
+    : '● BASEMAP HIDDEN ';
+}
+function setLayerVisible(key, visible) {
+  if (!(key in layerTargets)) return;
+  state.layers[key] = visible;
+  if (!visible) {
+    if (
+      $('photoDialog').open &&
+      key === (currentObservationNode === 'P1' ? 'imagery' : 'deltaFront')
+    )
+      $('photoDialog').close();
+    if (key === 'deltaFront' && $('regionDialog').open) $('regionDialog').close();
+    if (key === 'notes') {
+      if ($('fieldNoteDialog').open) $('fieldNoteDialog').close();
+      if ($('environmentTaskDialog').open) $('environmentTaskDialog').close();
+      pickingNote = false;
+      movingNote = null;
+      $('mapWrap').classList.remove('picking-note');
+      renderNoteTools();
+    }
+    if (key === 'customMap') {
+      if ($('customTaskDialog').open) {
+        if (state.phase === 'planning') {
+          state.suspendedPointEdit = {
+            index: viewedCustomTask,
+            fields: Object.fromEntries(
+              [
+                'pointName',
+                'pointX',
+                'pointY',
+                'pointHasTask',
+                'pointTitle',
+                'pointDescription',
+              ].map((id) => [
+                id,
+                $(id).type === 'checkbox' ? $(id).checked : $(id).value,
+              ]),
+            ),
+          };
+        }
+        $('customTaskDialog').close();
+      }
+      drawingCustom = false;
+      $('mapWrap').classList.remove('drawing-custom');
+    }
+    if (key === 'science') $('mapTooltip').hidden = true;
+  }
+  save();
+  render();
+}
+function ensureLayer(key) {
+  if (!state.layers[key]) setLayerVisible(key, true);
 }
 function render() {
   const r = routes[state.route],
@@ -201,7 +415,11 @@ function render() {
       ? state.customPoints.filter((p) => p.hasTask).length + ' tasks'
       : r.stops + ' SIM';
   const customRoutePoints = state.customPoints.map((p) => `${p.x},${p.y}`).join(' ');
-  for (const id of ['routeLine', 'routeGlow']) $(id).setAttribute('points', r.points);
+  for (const id of ['routeLine', 'routeGlow'])
+    $(id).setAttribute(
+      'points',
+      routes[state.route === 'custom' ? state.presetRoute : state.route].points,
+    );
   for (const id of ['customRouteLine', 'customRouteGlow'])
     $(id).setAttribute('points', customRoutePoints);
   document.querySelectorAll('.route-choice').forEach((b) => {
@@ -218,15 +436,15 @@ function render() {
   $('newJourney').hidden = state.phase !== 'finished';
   $('return').hidden = state.phase !== 'outbound';
   $('return').disabled = state.phase !== 'outbound';
-  $('complete').checked = state.done;
-  $('complete').disabled = state.phase !== 'outbound' || !state.observation;
+  $('complete').checked = observationState('P1').done;
+  $('complete').disabled = !canConfirmNode('P1');
   $('objective').textContent = planning
     ? 'Confirm your route and tasks, then start the journey'
     : state.phase === 'finished'
-      ? `Back at the starting point · ${state.done ? 'Observation complete' : 'Observation not completed'}`
+      ? `Back at the starting point · ${observationState('P1').done ? 'Observation complete' : 'Observation not completed'}`
       : state.phase === 'returning'
-        ? 'Retrace your route to the simulated landing point'
-        : state.done
+        ? 'Retrace your route to the simulated starting point'
+        : observationState('P1').done
           ? state.extra && !environmentTaskDone()
             ? 'Optional task: record an environmental change, or return now.'
             : 'Observation complete. Continue exploring or return now.'
@@ -234,42 +452,42 @@ function render() {
             ? 'Pause and open P1. Mark the ancient delta and save your observation'
             : 'Find P1 imagery along your route, or return at any time.';
   $('position').textContent = positionText();
-  $('taskHelp').textContent = state.observation
+  $('taskHelp').textContent = observationEvidence('P1')
     ? state.phase === 'outbound'
       ? 'Observation saved. Check the box to confirm completion.'
-      : `Observation saved · ${state.done ? 'Completed' : 'Not completed'}.`
+      : `Observation saved · ${observationState('P1').done ? 'Completed' : 'Not completed'}.`
     : state.phase === 'finished'
       ? 'This journey ended with the delta observation not completed.'
       : 'Near P1, mark the feature and save notes, then check the box to complete the task. You may return without completing it.';
   $('markerMode').value = state.mode;
   $('markerMode').disabled = false;
-  for (const [k, v] of Object.entries(state.layers)) {
-    $(k).checked = v;
-    if (k === 'terrain')
-      document.querySelector('.map-image').style.opacity = v ? '1' : '.1';
-    else
-      $(
-        {
-          hazards: 'hazardLayer',
-          science: 'scienceLayer',
-          route: 'routeLayer',
-          imagery: 'imageryLayer',
-          customMap: 'customMapLayer',
-          notes: 'fieldNoteLayer',
-        }[k],
-      ).style.display = v ? '' : 'none';
-  }
+  renderLayers();
   photoLocations.forEach((photo) => {
     $(photo.markerId).setAttribute('transform', `translate(${photo.x} ${photo.y})`);
+    if (photo.id === 'P1') {
+      $('p1Uncertainty').setAttribute('cx', photo.x);
+      $('p1Uncertainty').setAttribute('cy', photo.y);
+      $('p1Uncertainty').setAttribute('r', photo.uncertaintySymbolRadius);
+      $('p1Uncertainty').style.display =
+        state.mode === 'all' ||
+        isPhotoNearby(photo) ||
+        ($('photoDialog').open && currentObservationNode === 'P1')
+          ? ''
+          : 'none';
+    }
     $(photo.markerId).style.display =
-      state.mode === 'all' || isPhotoNearby(photo) ? '' : 'none';
+      state.mode === 'all' ||
+      isPhotoNearby(photo) ||
+      ($('photoDialog').open && currentObservationNode === 'P1')
+        ? ''
+        : 'none';
   });
   const nearbyCount = photoLocations.filter(isPhotoNearby).length;
   $('nearbySummary').textContent =
     `Nearby: ${nearbyCount}/${photoLocations.length}. Simulated radius: ${nearbyRadius} map units; not real meters.`;
   $('saveEnvironment').disabled = !state.notePosition;
   $('environment').disabled = false;
-  $('saveObservation').disabled = !(state.phase === 'outbound' && near() && state.paused);
+  refreshObservationControls();
   renderCustomMission();
   updateCurrentObjective();
   if (storageOK)
@@ -280,6 +498,7 @@ function changeRoute(route) {
   if (state.phase !== 'planning') return;
   const changed = state.route !== route;
   state.route = route;
+  if (route !== 'custom') state.presetRoute = route;
   drawingCustom = false;
   $('mapWrap').classList.remove('drawing-custom');
   if (changed) resetWaypointForm();
@@ -287,14 +506,7 @@ function changeRoute(route) {
   render();
   renderCustomEditor();
   if (route === 'custom') {
-    state.layers = {
-      ...state.layers,
-      terrain: true,
-      hazards: false,
-      science: false,
-      route: false,
-      customMap: true,
-    };
+    state.layers.customMap = true;
     save();
     render();
     openSidebarSection($('customRouteEditor').closest('.mission-panel'));
@@ -314,12 +526,13 @@ $('extraTask').onchange = (e) => {
   state.extra = e.target.checked;
   save();
 };
-for (const k of Object.keys(state.layers))
+for (const k of Object.keys(initial().layers))
   $(k).onchange = (e) => {
-    state.layers[k] = e.target.checked;
-    save();
-    render();
+    setLayerVisible(k, e.target.checked);
   };
+document.querySelectorAll('[data-layer-control]').forEach((control) => {
+  control.onchange = () => setLayerVisible(control.dataset.layerControl, control.checked);
+});
 $('markerMode').onchange = (e) => {
   state.mode = e.target.value;
   save();
@@ -347,12 +560,14 @@ $('newJourney').onclick = () => {
     ...initial(),
     route: state.route,
     layers: { ...state.layers },
+    presetRoute: state.presetRoute,
     records: state.records,
     mapNotes: state.mapNotes,
     journeyStart: state.records.length,
     customPoints: state.customPoints,
     customConfirmed: state.customConfirmed,
     mode: state.mode,
+    nodeObservations: state.nodeObservations,
   };
   $('environment').value = '';
   $('noteStatus').textContent = '';
@@ -383,17 +598,7 @@ $('return').onclick = () => {
   );
   render();
 };
-$('complete').onchange = (e) => {
-  if (!state.observation || state.phase !== 'outbound') return;
-  state.done = e.target.checked;
-  log(
-    'task',
-    state.done
-      ? 'Confirmed by explorer: delta observation complete'
-      : 'Task completion unchecked',
-  );
-  render();
-};
+$('complete').onchange = (e) => setNodeCompletion('P1', e.target.checked);
 $('environment').value = state.environment;
 $('environment').oninput = (e) => {
   state.environment = e.target.value;
@@ -424,92 +629,23 @@ $('saveEnvironment').onclick = () => {
   render();
 };
 $('logFilter').onchange = renderLogs;
-function paintMark() {
-  const m = state.mark;
-  $('annotation').hidden = !m;
-  if (m) {
-    $('annotation').style.left = m.x * 100 + '%';
-    $('annotation').style.top = m.y * 100 + '%';
-  }
-}
-function openPhoto(preview = false) {
-  if (pickingNote || drawingCustom) return;
-  if (preview !== true && (!state.layers.imagery || (state.mode === 'near' && !near())))
-    return;
-  if (active() && !state.paused) {
-    state.paused = true;
-    log('control', 'Journey paused automatically to view imagery');
-  }
-  $('observation').value = state.draft;
-  paintMark();
-  render();
-  $('observationStatus').textContent =
-    state.phase === 'planning'
-      ? 'Preview: mark the photo and keep a draft. Save the observation after reaching this waypoint.'
-      : state.observation
-        ? 'Observation saved. You can review or edit it.'
-        : 'Mark the photo, add notes and save your observation.';
-  $('photoDialog').showModal();
-}
-$('photoMarker').onclick = openPhoto;
-$('photoMarker').onkeydown = (e) => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    openPhoto();
-  }
-};
-$('closePhoto').onclick = () => $('photoDialog').close();
-function mark(x, y) {
-  state.mark = { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)) };
-  save();
-  paintMark();
-}
-$('photoCanvas').onclick = (e) => {
-  const box = $('photoCanvas').getBoundingClientRect();
-  mark((e.clientX - box.left) / box.width, (e.clientY - box.top) / box.height);
-};
-$('photoCanvas').onkeydown = (e) => {
-  if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', ' '].includes(e.key))
-    return;
-  e.preventDefault();
-  const m = state.mark || { x: 0.5, y: 0.5 };
-  mark(
-    m.x + (e.key === 'ArrowRight' ? 0.02 : e.key === 'ArrowLeft' ? -0.02 : 0),
-    m.y + (e.key === 'ArrowDown' ? 0.02 : e.key === 'ArrowUp' ? -0.02 : 0),
-  );
-};
-$('observation').oninput = (e) => {
-  state.draft = e.target.value;
-  save();
-};
-$('saveObservation').onclick = () => {
-  if (state.phase !== 'outbound' || !near() || !state.paused) return;
-  if (!state.mark || !state.draft.trim()) {
-    $('observationStatus').textContent =
-      'Mark a feature in the photo and enter your notes first.';
-    return;
-  }
-  state.observation = {
-    mark: { ...state.mark },
-    text: state.draft.trim(),
-    time: new Date().toISOString(),
-  };
-  state.done = false;
-  log(
-    'observation',
-    `P1 ancient delta observation: ${state.observation.text} (photo marker ${Math.round(state.mark.x * 100)}%, ${Math.round(state.mark.y * 100)}%)`,
-  );
-  $('observationStatus').textContent =
-    'Observation saved. Close the photo and check the task-completion box.';
-  render();
-};
+// OBSERVATION_VIEWER
 document.querySelectorAll('#scienceLayer .marker').forEach((m, i) => {
+  m.setAttribute('role', 'button');
+  m.setAttribute('tabindex', '0');
+  m.setAttribute('aria-label', `S${i + 1} simulated site: ${m.dataset.name}`);
   m.querySelector('text').textContent = `S${i + 1} SIM`;
   m.onclick = () => {
-    if (pickingNote || drawingCustom) return;
+    if (!state.layers.science || pickingNote || drawingCustom) return;
     const tip = $('mapTooltip');
     tip.hidden = false;
     tip.textContent = `S${i + 1} simulated target: ${m.dataset.name}. No real imagery is available.`;
+  };
+  m.onkeydown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      m.onclick();
+    }
   };
 });
 $('mapWrap').onclick = (e) => {
@@ -581,12 +717,13 @@ function renderMapNotes() {
       marker.setAttribute('tabindex', '0');
       marker.setAttribute('aria-label', `Open field note ${label}`);
       const open = () => {
+        if (!state.layers.notes || pickingNote || drawingCustom) return;
         selectedNote = savedNote;
         $('fieldNoteTitle').textContent = `Field note ${label}`;
         $('fieldNoteMeta').textContent =
           `${new Date(savedNote.time).toLocaleString('en-GB')} · Map point (${position.x.toFixed(0)}, ${position.y.toFixed(0)}) · Schematic coordinates`;
         $('fieldNoteContent').textContent = savedNote.content;
-        $('editFieldNote').value = savedNote.content;
+        $('editFieldNote').value = savedNote.editDraft ?? savedNote.content;
         $('fieldNoteFeedback').textContent = '';
         $('fieldNoteDialog').showModal();
       };
@@ -641,6 +778,12 @@ $('cancelNotePosition').onclick = () => {
   renderNotePosition();
 };
 $('closeFieldNote').onclick = () => $('fieldNoteDialog').close();
+$('editFieldNote').oninput = () => {
+  if (selectedNote) {
+    selectedNote.editDraft = $('editFieldNote').value;
+    save();
+  }
+};
 $('updateFieldNote').onclick = () => {
   const content = $('editFieldNote').value.trim();
   if (!selectedNote || !content) {
@@ -648,6 +791,7 @@ $('updateFieldNote').onclick = () => {
     return;
   }
   selectedNote.content = content;
+  delete selectedNote.editDraft;
   selectedNote.updatedAt = new Date().toISOString();
   $('fieldNoteContent').textContent = content;
   $('fieldNoteFeedback').textContent = 'Changes saved.';
@@ -687,6 +831,11 @@ function updateMarkerSizes() {
   const matrix = $('mapSvg').getScreenCTM();
   if (!matrix) return;
   const screenScale = Math.min(Math.abs(matrix.a), Math.abs(matrix.d));
+  const [regionLabelX, regionLabelY] = OBSERVATION_DATA.regions.deltaFront.labelAnchor;
+  $('deltaFrontLabel').setAttribute(
+    'transform',
+    `translate(${regionLabelX} ${regionLabelY}) scale(${Math.pow(zoom, -1.3)})`,
+  );
   document
     .querySelectorAll('#mapSvg .marker, #mapSvg .home-marker, #walker')
     .forEach((marker) => {
@@ -742,6 +891,16 @@ function setZoom(
   panY = anchorY - (anchorY - panY) * ratio;
   zoom = nextZoom;
   applyMapView();
+}
+function captureMapView() {
+  return { zoom, panX, panY, scrollX: window.scrollX, scrollY: window.scrollY };
+}
+function restoreMapView(view) {
+  zoom = view.zoom;
+  panX = view.panX;
+  panY = view.panY;
+  applyMapView();
+  window.scrollTo({ left: view.scrollX, top: view.scrollY, behavior: 'instant' });
 }
 $('zoomIn').onclick = () => setZoom(zoom + 0.5);
 $('zoomOut').onclick = () => setZoom(zoom - 0.5);
@@ -804,7 +963,10 @@ viewport.addEventListener(
 viewport.addEventListener('dragstart', (e) => e.preventDefault());
 new ResizeObserver(applyMapView).observe(viewport);
 $('previewDelta').onclick = () => openPhoto(true);
-$('previewEnvironment').onclick = () => $('environmentTaskDialog').showModal();
+$('previewEnvironment').onclick = () => {
+  ensureLayer('notes');
+  $('environmentTaskDialog').showModal();
+};
 $('closeEnvironmentTask').onclick = () => $('environmentTaskDialog').close();
 $('startEnvironmentTask').onclick = () => {
   $('environmentTaskDialog').close();
@@ -826,12 +988,17 @@ function updateCurrentObjective() {
     $('activeObjective').textContent = objective;
   const custom = state.route === 'custom';
   const total = custom ? state.customPoints.filter((point) => point.hasTask).length : 1;
-  const completed = custom ? state.customCompleted.length : Number(state.done);
+  const completed = custom
+    ? state.customCompleted.length
+    : Number(observationState('P1').done);
+  const observationCount = Object.values(state.nodeObservations).filter(
+    (node) => node.done,
+  ).length;
   const pos = getSimulatedPosition();
   $('activePosition').textContent =
-    `${routes[state.route].name} · ${$('duration').textContent} · X ${pos.x.toFixed(0)}, Y ${pos.y.toFixed(0)} (SIM) · Tasks ${completed}/${total} complete`;
+    `${routes[state.route].name} · ${$('duration').textContent} · X ${pos.x.toFixed(0)}, Y ${pos.y.toFixed(0)} (SIM) · Route tasks ${completed}/${total} · Observations ${observationCount}/3 complete`;
   $('deltaTaskStatus').textContent =
-    `P1 · ${state.done ? 'Complete' : 'Not completed'} · View details`;
+    `P1 · ${observationState('P1').done ? 'Complete' : 'Not completed'} · View details`;
   const extraDone = state.records
     .slice(state.journeyStart)
     .some((r) => r.kind === 'environment');
@@ -848,7 +1015,7 @@ function renderCustomMission() {
   const custom = state.route === 'custom';
   $('customRouteEditor').hidden = !custom;
   $('customTaskGroup').hidden = !custom;
-  $('previewDelta').closest('details').hidden = custom;
+  $('previewDelta').closest('details').hidden = false;
   $('mainTask').innerHTML = custom
     ? '<option>Optional waypoint tasks</option>'
     : '<option value="delta">Identify the ancient delta</option>';
@@ -932,11 +1099,12 @@ function renderCustomMarkers() {
           : `Waypoint ${index + 1}`);
     marker.append(circle, text, label);
     marker.onclick = (e) => {
-      if (pickingNote || drawingCustom) return;
+      if (!state.layers.customMap || pickingNote || drawingCustom) return;
       e.stopPropagation();
       openCustomTask(index);
     };
     marker.onkeydown = (e) => {
+      if (!state.layers.customMap || pickingNote || drawingCustom) return;
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         openCustomTask(index);
@@ -944,8 +1112,8 @@ function renderCustomMarkers() {
     };
     layer.append(marker);
   });
-  const home = document.querySelector('.home-marker');
-  if (state.route === 'custom' && state.customPoints[0])
+  const home = $('customHomeMarker');
+  if (state.customPoints[0])
     home.setAttribute(
       'transform',
       `translate(${state.customPoints[0].x} ${state.customPoints[0].y})`,
@@ -978,6 +1146,10 @@ function renderCustomTaskCards() {
 function openCustomTask(index) {
   const point = state.customPoints[index];
   if (!point) return;
+  ensureLayer('customMap');
+  document
+    .querySelectorAll('.custom-waypoint')
+    .forEach((marker, i) => marker.classList.toggle('selected-location', i === index));
   viewedCustomTask = index;
   $('customTaskTitle').textContent = point.hasTask
     ? point.title
@@ -997,6 +1169,13 @@ function openCustomTask(index) {
   $('pointTitle').value = point.title;
   $('pointTitle').required = point.hasTask;
   $('pointDescription').value = point.description;
+  if (editable && state.suspendedPointEdit?.index === index) {
+    for (const [id, value] of Object.entries(state.suspendedPointEdit.fields)) {
+      if ($(id).type === 'checkbox') $(id).checked = value;
+      else $(id).value = value;
+    }
+    $('pointTitle').required = $('pointHasTask').checked;
+  }
   $('pointEditStatus').textContent = '';
   $('customTaskStatus').textContent = !point.hasTask
     ? 'This waypoint has no task. The explorer passes through automatically.'
@@ -1070,6 +1249,7 @@ function editCustomWaypoint(index) {
   $('cancelWaypointEdit').hidden = false;
 }
 function customRouteChanged() {
+  delete state.suspendedPointEdit;
   state.customConfirmed = false;
   state.progress = 0;
   state.customReached = [];
@@ -1193,7 +1373,11 @@ function storeCustomWaypoint(index, point) {
 $('pointHasTask').onchange = () => {
   $('pointTitle').required = $('pointHasTask').checked;
 };
-$('cancelPointEdit').onclick = () => $('customTaskDialog').close();
+$('cancelPointEdit').onclick = () => {
+  delete state.suspendedPointEdit;
+  save();
+  $('customTaskDialog').close();
+};
 $('pointEditForm').onsubmit = (e) => {
   e.preventDefault();
   const point = {
@@ -1210,6 +1394,8 @@ $('pointEditForm').onsubmit = (e) => {
       'Enter valid map coordinates and a title for an enabled task.';
     return;
   }
+  delete state.suspendedPointEdit;
+  save();
   if (editingWaypoint === index) editCustomWaypoint(index);
   $('customTaskDialog').close();
 };
@@ -1271,7 +1457,7 @@ $('exportLog').onclick = () => {
     '',
     ...records.map(
       (r) =>
-        `${r.time} | ${routes[r.route]?.name || r.route} | ${r.phase} | (${r.position.x}, ${r.position.y})\n${r.content}\n`,
+        `${r.time} | ${routes[r.route]?.name || r.route} | ${r.phase} | (${r.position.x}, ${r.position.y})\nNode ${r.nodeId || '-'} | Task ${r.taskId || '-'} | Image ${r.imageId || '-'} | Image captured: ${r.capturedAt || 'not applicable'}\n${r.content}\n${r.evidence ? 'Evidence: ' + JSON.stringify(r.evidence) + '\n' : ''}`,
     ),
   ].join('\r\n');
   const url = URL.createObjectURL(
@@ -1295,7 +1481,8 @@ setInterval(() => {
     $('photoDialog').open ||
     $('fieldNoteDialog').open ||
     $('customTaskDialog').open ||
-    $('environmentTaskDialog').open
+    $('environmentTaskDialog').open ||
+    $('regionDialog').open
   )
     return;
   state.progress = Math.max(
@@ -1306,18 +1493,29 @@ setInterval(() => {
     if (Number.isInteger(state.progress)) reachCustomWaypoint(state.progress);
   } else if (state.phase === 'outbound' && state.progress === last()) {
     state.paused = true;
-    log('arrival', 'Arrived at simulated waypoint P1. Awaiting observation');
+    log(
+      'arrival',
+      'Reached the planned route destination. P1 is a separate approximate camera-site node.',
+    );
   } else if (state.phase === 'returning' && state.progress === 0) {
-    log('arrival', 'Returned to the simulated landing point. Round trip complete');
+    log('arrival', 'Returned to the simulated starting point. Round trip complete');
     state.phase = 'finished';
     state.paused = true;
   }
   save();
   render();
 }, 500);
+const {
+  paintMark,
+  refreshObservationControls,
+  canConfirmNode,
+  openPhoto,
+  setNodeCompletion,
+} = createObservationViewer();
 // Keep the user's imagery filter and layer choices across routes and reloads.
 renderNotePosition();
 render();
 renderLogs();
 paintMark();
 renderCustomEditor();
+save();
