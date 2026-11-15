@@ -5,7 +5,7 @@ An independent, **visual-only** concept for the *Interplanetary Survival Guide: 
 ## Start in 30 seconds
 
 1. Unzip the folder.
-2. Open `index.html` with Chrome, Edge or Firefox.
+2. Open `mission.html` with Chrome, Edge or Firefox.
 3. Select one of three example routes and switch map layers on/off.
 
 There is no Node.js, backend, database or API key needed for this version.
